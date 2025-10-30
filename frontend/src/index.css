@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-blue-100 p-6 transition-all duration-200;
+  }
+  
+  .card:hover {
+    @apply shadow-md;
+  }
+}
