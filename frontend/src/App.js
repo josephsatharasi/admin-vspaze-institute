@@ -17,6 +17,9 @@ import Settings from './pages/Settings';
 import Notifications from './pages/Notifications';
 import CourseDetails from './pages/CourseDetails';
 import FacultyDetails from './pages/FacultyDetails';
+import Announcements from './pages/Announcements';
+import PendingStudents from './pages/PendingStudents';
+import PendingFaculty from './pages/PendingFaculty';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -74,11 +77,14 @@ function App() {
         onFacultyClick={(faculty) => setSelectedFaculty(faculty)}
       />;
       case 'students': return <StudentManagement />;
+      case 'pending-students': return <PendingStudents />;
       case 'faculty': return <FacultyManagement />;
+      case 'pending-faculty': return <PendingFaculty />;
       case 'courses': return <CourseManagement />;
       case 'batches': return <BatchManagement />;
       case 'attendance': return <AttendanceManagement />;
       case 'payments': return <PaymentManagement />;
+      case 'announcements': return <Announcements />;
       case 'settings': return <Settings />;
       case 'notifications': return <Notifications />;
       default: return <DashboardLanding onBatchClick={(batch) => setSelectedBatch(batch)} />;
@@ -110,10 +116,14 @@ function App() {
           onSettingsClick={() => setActiveSection('settings')}
           onNotificationClick={() => setActiveSection('notifications')}
         />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          {renderContent()}
+        <main className="flex-1 overflow-y-auto">
+          <div className="min-h-full flex flex-col p-4 md:p-6">
+            <div className="flex-1">
+              {renderContent()}
+            </div>
+            <Footer />
+          </div>
         </main>
-        <Footer />
       </div>
       {showProfile && <AdminProfile onClose={() => setShowProfile(false)} />}
     </div>

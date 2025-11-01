@@ -4,7 +4,7 @@ import { Building2, Bell, Shield, Palette, Database, DollarSign, Clock, Save } f
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('institute');
   const [settings, setSettings] = useState({
-    instituteName: 'VSPaze Institute',
+    instituteName: 'vspaze Institute',
     instituteEmail: 'contact@vspaze.com',
     institutePhone: '+91 9876543210',
     instituteAddress: 'Hyderabad, India',

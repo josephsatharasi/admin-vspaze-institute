@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { GraduationCap, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 
 const Register = ({ onRegister, onSwitchToLogin }) => {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '', phone: '', course: '', batch: '', address: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
@@ -25,18 +25,32 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem('vspaze_users') || '[]');
+    // Check if email already exists in pending or approved
+    const pending = JSON.parse(localStorage.getItem('pending_students') || '[]');
+    const approved = JSON.parse(localStorage.getItem('approved_students') || '[]');
     
-    if (users.find(u => u.email === formData.email)) {
+    if (pending.find(u => u.email === formData.email) || approved.find(u => u.email === formData.email)) {
       setError('Email already registered');
       return;
     }
 
-    users.push({ name: formData.name, email: formData.email, password: formData.password });
-    localStorage.setItem('vspaze_users', JSON.stringify(users));
-    localStorage.setItem('vspaze_auth', JSON.stringify({ isAuthenticated: true, user: { name: formData.name, email: formData.email } }));
+    // Add to pending students for admin approval
+    const newStudent = {
+      id: Date.now(),
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone || 'Not provided',
+      course: formData.course || 'Not specified',
+      batch: formData.batch || 'To be assigned',
+      address: formData.address || 'Not provided',
+      registeredAt: new Date().toISOString()
+    };
     
-    onRegister();
+    pending.push(newStudent);
+    localStorage.setItem('pending_students', JSON.stringify(pending));
+    
+    alert('Registration submitted successfully! Please wait for admin approval.');
+    onSwitchToLogin();
   };
 
   return (
@@ -119,6 +133,28 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
                 placeholder="Re-enter password"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Phone (Optional)</label>
+            <input
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => setFormData({...formData, phone: e.target.value})}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              placeholder="Your phone number"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Course (Optional)</label>
+            <input
+              type="text"
+              value={formData.course}
+              onChange={(e) => setFormData({...formData, course: e.target.value})}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              placeholder="Interested course"
+            />
           </div>
 
           <button

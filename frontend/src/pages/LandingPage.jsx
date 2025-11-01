@@ -21,7 +21,7 @@ const LandingPage = ({ onLogin }) => {
               <GraduationCap className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">VSPaze Institute</h1>
+              <h1 className="text-2xl font-bold text-gray-900">vspaze Institute</h1>
               <p className="text-xs text-gray-500">Admin Management System</p>
             </div>
           </div>
@@ -96,7 +96,7 @@ const LandingPage = ({ onLogin }) => {
       {/* Footer */}
       <footer className="bg-white/80 backdrop-blur-sm border-t border-blue-100 py-8 mt-16">
         <div className="max-w-7xl mx-auto px-6 text-center text-gray-600">
-          <p>© 2024 VSPaze Institute. All rights reserved.</p>
+          <p>© 2024 vspaze Institute. All rights reserved.</p>
         </div>
       </footer>
     </div>
