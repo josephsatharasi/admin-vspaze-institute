@@ -1,25 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import Header from './components/Header';
-import Sidebar from './components/Sidebar';
+import { useNavigate } from 'react-router-dom';
+import Header from './admin/components/Header';
+import Sidebar from './admin/components/Sidebar';
 import Footer from './components/Footer';
-import LandingPage from './pages/LandingPage';
-import Login from './pages/Login';
-import AdminProfile from './pages/AdminProfile';
-import DashboardLanding from './pages/DashboardLanding';
-import StudentManagement from './pages/StudentManagement';
-import FacultyManagement from './pages/FacultyManagement';
-import CourseManagement from './pages/CourseManagement';
-import BatchManagement from './pages/BatchManagement';
-import AttendanceManagement from './pages/AttendanceManagement';
-import PaymentManagement from './pages/PaymentManagement';
-import BatchDetails from './pages/BatchDetails';
-import Settings from './pages/Settings';
-import Notifications from './pages/Notifications';
-import CourseDetails from './pages/CourseDetails';
-import FacultyDetails from './pages/FacultyDetails';
-import Announcements from './pages/Announcements';
-import PendingStudents from './pages/PendingStudents';
-import PendingFaculty from './pages/PendingFaculty';
+import AdminProfile from './admin/pages/AdminProfile';
+import DashboardLanding from './admin/pages/DashboardLanding';
+import StudentManagement from './admin/pages/StudentManagement';
+import FacultyManagement from './admin/pages/FacultyManagement';
+import CourseManagement from './admin/pages/CourseManagement';
+import BatchManagement from './admin/pages/BatchManagement';
+import AttendanceManagement from './admin/pages/AttendanceManagement';
+import PaymentManagement from './admin/pages/PaymentManagement';
+import BatchDetails from './admin/pages/BatchDetails';
+import Settings from './admin/pages/Settings';
+import Notifications from './admin/pages/Notifications';
+import CourseDetails from './admin/pages/CourseDetails';
+import FacultyDetails from './admin/pages/FacultyDetails';
+import Announcements from './admin/pages/Announcements';
+import PendingStudents from './admin/pages/PendingStudents';
+import PendingFaculty from './admin/pages/PendingFaculty';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -44,19 +43,16 @@ function App() {
     setCurrentView('dashboard');
   };
 
+  const navigate = useNavigate();
+
   const handleLogout = () => {
     localStorage.removeItem('vspaze_auth');
-    setIsAuthenticated(false);
-    setCurrentView('landing');
-    setActiveSection('home');
-    setSelectedBatch(null);
+    window.location.href = '/';
   };
 
   if (!isAuthenticated) {
-    if (currentView === 'login') {
-      return <Login onLogin={handleLogin} />;
-    }
-    return <LandingPage onLogin={() => setCurrentView('login')} />;
+    navigate('/admin-login');
+    return null;
   }
 
   const renderContent = () => {
