@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Users, Award, BookOpen, TrendingUp, CheckCircle, Star, Code, Database, Megaphone, Cloud, Palette, Briefcase, DollarSign, Clock as ClockIcon, Target, Play, Zap, Shield, Video, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, Users, Award, BookOpen, TrendingUp, CheckCircle, Star, Code, Database, Megaphone, Cloud, Palette, Briefcase, DollarSign, Clock as ClockIcon, Target, Play, Zap, Shield, Video, ChevronLeft, ChevronRight, X, Calendar } from 'lucide-react';
 import { courses } from '../data/courses';
 import { faculty } from '../data/faculty';
 import { testimonials } from '../data/testimonials';
@@ -49,7 +49,78 @@ const TestimonialCarousel = ({ testimonials }) => {
   );
 };
 
+const WatchDemoModal = ({ isOpen, onClose }) => {
+  const [selectedOption, setSelectedOption] = useState(null);
+
+  const liveDemoSlots = [
+    { id: 1, date: 'Jan 25, 2024', time: '10:00 AM - 11:00 AM' },
+    { id: 2, date: 'Jan 26, 2024', time: '2:00 PM - 3:00 PM' },
+    { id: 3, date: 'Jan 27, 2024', time: '4:00 PM - 5:00 PM' }
+  ];
+
+  const handleLiveDemoSelect = (slot) => {
+    window.open('https://meet.google.com/your-demo-link', '_blank');
+  };
+
+  const handleRecordedDemo = () => {
+    window.open('https://youtu.be/ajdRvxDWH4w?si=1ZFxG8Vstu66A3Gu', '_blank');
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="bg-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-cyan-500/30">
+        <div className="p-6 border-b border-cyan-500/20 flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-white">Watch Demo</h2>
+          <button onClick={onClose} className="p-2 hover:bg-slate-700 rounded-lg">
+            <X className="w-5 h-5 text-white" />
+          </button>
+        </div>
+
+        <div className="p-6 min-h-[200px]">
+          {!selectedOption ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button onClick={() => setSelectedOption('live')} className="p-8 border-2 border-cyan-500/30 rounded-xl hover:border-cyan-500 hover:bg-cyan-500/10 transition-all bg-slate-700/50">
+                <Video className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">Live Demo</h3>
+                <p className="text-cyan-200 text-sm">Join a live session with our expert</p>
+              </button>
+
+              <button onClick={() => { setSelectedOption('recorded'); handleRecordedDemo(); }} className="p-8 border-2 border-purple-500/30 rounded-xl hover:border-purple-500 hover:bg-purple-500/10 transition-all bg-slate-700/50">
+                <Play className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">Recorded Demo</h3>
+                <p className="text-cyan-200 text-sm">Watch pre-recorded demo anytime</p>
+              </button>
+            </div>
+          ) : selectedOption === 'live' ? (
+            <div>
+              <button onClick={() => setSelectedOption(null)} className="text-cyan-400 hover:text-cyan-300 mb-4 font-semibold">← Back</button>
+              <h3 className="text-xl font-semibold text-white mb-4">Select a Time Slot</h3>
+              <div className="space-y-3">
+                {liveDemoSlots.map((slot) => (
+                  <button key={slot.id} onClick={() => handleLiveDemoSelect(slot)} className="w-full p-4 border-2 border-cyan-500/30 rounded-xl hover:border-cyan-500 hover:bg-cyan-500/10 transition-all text-left bg-slate-700/50">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-white">{slot.date}</p>
+                        <p className="text-cyan-200">{slot.time}</p>
+                      </div>
+                      <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm border border-green-500/30">Available</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Home = () => {
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+
   return (
     <div className="bg-slate-900">
       {/* Hero Section */}
@@ -80,10 +151,10 @@ const Home = () => {
                   <span>Start Learning Free</span>
                   <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-2 transition-transform" />
                 </Link>
-                <Link to="/courses" className="group bg-transparent border-3 border-cyan-400 text-cyan-300 px-8 sm:px-10 py-4 sm:py-5 rounded-full text-lg sm:text-xl font-bold hover:bg-cyan-400 hover:text-slate-900 transition-all flex items-center space-x-3 w-full sm:w-auto justify-center">
+                <button onClick={() => setIsDemoModalOpen(true)} className="group bg-transparent border-3 border-cyan-400 text-cyan-300 px-8 sm:px-10 py-4 sm:py-5 rounded-full text-lg sm:text-xl font-bold hover:bg-cyan-400 hover:text-slate-900 transition-all flex items-center space-x-3 w-full sm:w-auto justify-center">
                   <Play className="w-5 h-5 sm:w-6 sm:h-6" />
                   <span>Watch Demo</span>
-                </Link>
+                </button>
               </div>
               <div className="mt-12 flex justify-center md:justify-start items-center space-x-4 sm:space-x-8 text-white">
                 <div className="text-center">
@@ -161,6 +232,7 @@ const Home = () => {
                     {course.iconType === 'megaphone' && <Megaphone className="w-10 h-10 text-white" />}
                     {course.iconType === 'cloud' && <Cloud className="w-10 h-10 text-white" />}
                     {course.iconType === 'palette' && <Palette className="w-10 h-10 text-white" />}
+                    {course.iconType === 'users' && <Users className="w-10 h-10 text-white" />}
                   </div>
                   <h3 className="text-2xl font-bold text-white relative">{course.name}</h3>
                 </div>
@@ -289,6 +361,8 @@ const Home = () => {
           <p className="text-white mt-6 opacity-75">✓ No Credit Card Required  ✓ Start Coding Today</p>
         </div>
       </section>
+
+      <WatchDemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
     </div>
   );
 };

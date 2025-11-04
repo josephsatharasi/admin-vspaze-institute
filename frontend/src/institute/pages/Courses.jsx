@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Clock, DollarSign, Users, CheckCircle, ArrowRight, Code, Database, Megaphone, Cloud, Palette } from 'lucide-react';
+import { BookOpen, Clock, DollarSign, Users, CheckCircle, ArrowRight, Code, Database, Megaphone, Cloud, Palette, Users as UsersIcon } from 'lucide-react';
 import { courses } from '../data/courses';
 import { Link } from 'react-router-dom';
 
@@ -46,9 +46,10 @@ const Courses = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {courses.map((course) => (
-              <div
+              <Link
                 key={course.id}
-                className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 overflow-hidden"
+                to={`/course/${course.id}`}
+                className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 overflow-hidden block"
               >
                 <div className="bg-gradient-to-br from-blue-500 to-purple-500 p-8 text-center">
                   <div className="w-20 h-20 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-4">
@@ -57,6 +58,7 @@ const Courses = () => {
                     {course.iconType === 'megaphone' && <Megaphone className="w-10 h-10 text-white" />}
                     {course.iconType === 'cloud' && <Cloud className="w-10 h-10 text-white" />}
                     {course.iconType === 'palette' && <Palette className="w-10 h-10 text-white" />}
+                    {course.iconType === 'users' && <UsersIcon className="w-10 h-10 text-white" />}
                   </div>
                   <h3 className="text-2xl font-bold text-white">{course.name}</h3>
                 </div>
@@ -86,14 +88,22 @@ const Courses = () => {
                     </div>
                   </div>
 
-                  <Link
-                    to="/student-registration"
-                    className="block text-center bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
-                  >
-                    Enroll Now
-                  </Link>
+                  <div className="flex gap-2">
+                    <button
+                      className="flex-1 text-center bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-all"
+                    >
+                      View Details
+                    </button>
+                    <Link
+                      to="/student-registration"
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex-1 text-center bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
+                    >
+                      Enroll Now
+                    </Link>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

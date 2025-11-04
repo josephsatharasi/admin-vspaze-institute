@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GraduationCap, Menu, X, Home, Info, BookOpen, Users, Award, Phone, UserPlus, Shield, DollarSign, CheckCircle, ChevronDown } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -6,6 +6,17 @@ const InstituteNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const location = useLocation();
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -112,7 +123,7 @@ const InstituteNavbar = () => {
 
       {/* Mobile Menu Sidebar */}
       {isOpen && (
-        <div className={`fixed top-0 left-0 h-full w-80 bg-gradient-to-b from-white to-blue-50 shadow-xl z-50 transform transition-transform duration-300 md:hidden ${
+        <div onClick={(e) => e.stopPropagation()} className={`fixed top-0 left-0 h-full w-80 bg-gradient-to-b from-white to-blue-50 shadow-xl z-50 transform transition-transform duration-300 md:hidden overflow-y-auto ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}>
           <div className="p-4 border-b border-gray-200 flex items-center justify-between">

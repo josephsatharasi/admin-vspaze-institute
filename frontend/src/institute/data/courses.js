@@ -52,5 +52,14 @@ export const courses = [
     description: "Design beautiful and user-friendly interfaces. Learn Figma, Adobe XD, and design principles.",
     syllabus: ["Design Principles", "Figma", "Adobe XD", "Wireframing", "Prototyping", "User Research", "Portfolio"],
     iconType: "palette"
+  },
+  {
+    id: 7,
+    name: "Soft Skills & Personality Development",
+    duration: "3 Months",
+    fee: "₹20,000",
+    description: "Enhance your communication, leadership, and interpersonal skills. Build confidence and professional presence.",
+    syllabus: ["Communication Skills", "Leadership", "Time Management", "Team Building", "Public Speaking", "Interview Skills", "Emotional Intelligence", "Professional Etiquette"],
+    iconType: "users"
   }
 ];

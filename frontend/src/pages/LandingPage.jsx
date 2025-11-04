@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { GraduationCap, Users, BookOpen, Calendar, BarChart3, Shield, Clock, Award } from 'lucide-react';
+import WatchDemoModal from '../components/WatchDemoModal';
 
 const LandingPage = ({ onLogin }) => {
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+
   const features = [
     { icon: Users, title: 'Student Management', desc: 'Complete student lifecycle management with enrollment tracking' },
     { icon: GraduationCap, title: 'Faculty Management', desc: 'Manage faculty profiles, assignments, and performance' },
@@ -42,7 +45,10 @@ const LandingPage = ({ onLogin }) => {
           Streamline your educational institute operations with our comprehensive admin dashboard. 
           Manage students, faculty, courses, and more - all in one place.
         </p>
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center gap-4">
+          <button onClick={() => setIsDemoModalOpen(true)} className="px-8 py-4 bg-white text-blue-600 border-2 border-blue-600 rounded-lg hover:bg-blue-50 font-semibold text-lg shadow-lg">
+            Watch Demo
+          </button>
           <button onClick={onLogin} className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-lg shadow-lg">
             Admin Login
           </button>
@@ -99,6 +105,8 @@ const LandingPage = ({ onLogin }) => {
           <p>© 2024 vspaze Institute. All rights reserved.</p>
         </div>
       </footer>
+
+      <WatchDemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
     </div>
   );
 };
