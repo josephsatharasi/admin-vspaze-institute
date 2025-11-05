@@ -7,8 +7,11 @@ const PendingStudents = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [password, setPassword] = useState('');
+  const [courseFee, setCourseFee] = useState('');
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [viewStudent, setViewStudent] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [approvedCredentials, setApprovedCredentials] = useState(null);
 
   useEffect(() => {
     initializePendingStudents();
@@ -24,6 +27,7 @@ const PendingStudents = () => {
     setSelectedStudent(student);
     setShowPasswordModal(true);
     setPassword('');
+    setCourseFee('50000');
   };
 
   const handleApprove = () => {
@@ -37,20 +41,26 @@ const PendingStudents = () => {
       return;
     }
 
+    if (!courseFee || parseFloat(courseFee) <= 0) {
+      alert('Please enter a valid course fee');
+      return;
+    }
+
     // Remove from pending
     const updatedPending = pendingStudents.filter(s => s.id !== selectedStudent.id);
     localStorage.setItem('pending_students', JSON.stringify(updatedPending));
 
     // Add to approved students with generated ID
     const students = JSON.parse(localStorage.getItem('approved_students') || '[]');
+    const fee = parseFloat(courseFee);
     const newStudent = {
       ...selectedStudent,
       password,
       status: 'Active',
       enrolledCourses: [selectedStudent.course],
-      totalFee: 0,
+      totalFee: fee,
       paidAmount: 0,
-      dueAmount: 0,
+      dueAmount: fee,
       joinDate: new Date().toISOString().split('T')[0],
       enrollmentType: 'individual'
     };
@@ -59,8 +69,9 @@ const PendingStudents = () => {
 
     setPendingStudents(updatedPending);
     setShowPasswordModal(false);
+    setApprovedCredentials({ email: selectedStudent.email, password });
+    setShowSuccessModal(true);
     setSelectedStudent(null);
-    alert(`${selectedStudent.name} has been approved and added to the institute!`);
   };
 
   const handleReject = (id) => {
@@ -158,7 +169,7 @@ const PendingStudents = () => {
             <div className="p-6">
               <div className="mb-4">
                 <p className="text-gray-700 mb-2">Approving: <span className="font-bold">{selectedStudent.name}</span></p>
-                <p className="text-sm text-gray-600">Please set a password for this student to access the system</p>
+                <p className="text-sm text-gray-600">Set password and course fee for this student</p>
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
@@ -172,6 +183,16 @@ const PendingStudents = () => {
                     placeholder="Enter password (min 6 characters)"
                   />
                 </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Course Fee (₹)</label>
+                <input
+                  type="number"
+                  value={courseFee}
+                  onChange={(e) => setCourseFee(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                  placeholder="Enter course fee"
+                />
               </div>
               <div className="flex space-x-2">
                 <button
@@ -260,6 +281,46 @@ const PendingStudents = () => {
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && approvedCredentials && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-md">
+            <div className="p-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-10 h-10 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 text-center mb-2">Student Approved!</h3>
+              <p className="text-gray-600 text-center mb-6">The student has been successfully approved. Share these credentials:</p>
+              
+              <div className="bg-blue-50 rounded-lg p-4 mb-4">
+                <div className="mb-3">
+                  <p className="text-sm text-gray-600 mb-1">Email</p>
+                  <p className="font-semibold text-gray-900">{approvedCredentials.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Password</p>
+                  <p className="font-semibold text-gray-900">{approvedCredentials.password}</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-gray-600 text-center mb-4">
+                Student can login at: <span className="font-semibold text-blue-600">/student-login</span>
+              </p>
+
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  setApprovedCredentials(null);
+                }}
+                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-semibold"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

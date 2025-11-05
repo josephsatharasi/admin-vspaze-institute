@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import InstituteLayout from './institute/InstituteLayout';
 import Home from './institute/pages/Home';
 import About from './institute/pages/About';
@@ -15,7 +15,22 @@ import Admissions from './institute/pages/Admissions';
 import StudentRegistration from './institute/pages/StudentRegistration';
 import CourseDetail from './institute/pages/CourseDetail';
 import AdminLogin from './pages/AdminLogin';
+import StudentLogin from './pages/StudentLogin';
 import AdminApp from './App';
+import StudentApp from './student/StudentApp';
+
+function HomeRedirect() {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const studentAuth = JSON.parse(localStorage.getItem('student_auth') || '{}');
+    if (studentAuth.isAuthenticated) {
+      navigate('/student');
+    }
+  }, [navigate]);
+  
+  return <Home />;
+}
 
 function AppRouter() {
   return (
@@ -23,7 +38,7 @@ function AppRouter() {
       <Routes>
         {/* Institute Public Website */}
         <Route path="/" element={<InstituteLayout />}>
-          <Route index element={<Home />} />
+          <Route index element={<HomeRedirect />} />
           <Route path="about" element={<About />} />
           <Route path="courses" element={<Courses />} />
           <Route path="faculty" element={<Faculty />} />
@@ -40,8 +55,14 @@ function AppRouter() {
         {/* Admin Login */}
         <Route path="/admin-login" element={<AdminLogin />} />
 
+        {/* Student Login */}
+        <Route path="/student-login" element={<StudentLogin />} />
+
         {/* Admin Dashboard */}
         <Route path="/admin" element={<AdminApp />} />
+
+        {/* Student Dashboard */}
+        <Route path="/student" element={<StudentApp />} />
       </Routes>
     </BrowserRouter>
   );

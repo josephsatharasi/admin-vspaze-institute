@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GraduationCap, Menu, X, Home, Info, BookOpen, Users, Award, Phone, UserPlus, Shield, DollarSign, CheckCircle, ChevronDown } from 'lucide-react';
+import { GraduationCap, Menu, X, Home, Info, BookOpen, Users, Award, Phone, UserPlus, Shield, DollarSign, CheckCircle, ChevronDown, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const InstituteNavbar = () => {
@@ -99,12 +99,17 @@ const InstituteNavbar = () => {
               )
             ))}
             <Link
+              to="/student-login"
+              className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+            >
+              Student Login
+            </Link>
+            <Link
               to="/admin-login"
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
               Admin Login
             </Link>
-
           </div>
 
           <button
@@ -183,6 +188,14 @@ const InstituteNavbar = () => {
             
             <div className="border-t border-gray-200 mt-4 pt-4">
               <Link
+                to="/student-login"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-3 px-4 py-3 rounded-lg mb-2 text-gray-700 hover:bg-gray-100 transition-all"
+              >
+                <User className="w-5 h-5" />
+                <span className="font-medium">Student Login</span>
+              </Link>
+              <Link
                 to="/admin-login"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center space-x-3 px-4 py-3 rounded-lg mb-2 text-gray-700 hover:bg-gray-100 transition-all"
@@ -190,7 +203,6 @@ const InstituteNavbar = () => {
                 <Shield className="w-5 h-5" />
                 <span className="font-medium">Admin Login</span>
               </Link>
-
             </div>
           </nav>
         </div>
