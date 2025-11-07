@@ -1,12 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, X, DollarSign } from 'lucide-react';
+import api from '../../utils/api';
 
 const PaymentManagement = () => {
-  const [payments, setPayments] = useState([
-    { id: 1, studentName: 'John Doe', course: 'Full Stack Development', amount: 45000, paid: 30000, due: 15000, date: '2024-01-15', status: 'Partial' },
-    { id: 2, studentName: 'Sarah Wilson', course: 'Data Science', amount: 52000, paid: 52000, due: 0, date: '2024-02-01', status: 'Paid' },
-    { id: 3, studentName: 'Mike Johnson', course: 'Digital Marketing', amount: 38000, paid: 0, due: 38000, date: '2024-01-20', status: 'Pending' }
-  ]);
+  const [payments, setPayments] = useState([]);
+  const [students, setStudents] = useState([]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const [paymentsRes, studentsRes] = await Promise.all([
+        api.get('/admin/payments'),
+        api.get('/admin/students')
+      ]);
+      setPayments(paymentsRes.data.payments || []);
+      setStudents(studentsRes.data.students || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
   const [showModal, setShowModal] = useState(false);
   const [editingPayment, setEditingPayment] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -88,17 +103,17 @@ const PaymentManagement = () => {
           </thead>
           <tbody>
             {filteredPayments.map((payment) => (
-              <tr key={payment.id} className="border-b border-gray-100 hover:bg-gray-50">
-                <td className="py-3 px-4">{payment.studentName}</td>
-                <td className="py-3 px-4">{payment.course}</td>
-                <td className="py-3 px-4">₹{payment.amount.toLocaleString()}</td>
-                <td className="py-3 px-4 text-green-600">₹{payment.paid.toLocaleString()}</td>
-                <td className="py-3 px-4 text-red-600">₹{payment.due.toLocaleString()}</td>
-                <td className="py-3 px-4">{payment.date}</td>
+              <tr key={payment._id} className="border-b border-gray-100 hover:bg-gray-50">
+                <td className="py-3 px-4">{payment.student?.name || 'N/A'}</td>
+                <td className="py-3 px-4">{payment.student?.enrolledCourses?.[0]?.name || 'N/A'}</td>
+                <td className="py-3 px-4">₹{payment.student?.totalFee?.toLocaleString() || 0}</td>
+                <td className="py-3 px-4 text-green-600">₹{payment.amount?.toLocaleString() || 0}</td>
+                <td className="py-3 px-4 text-red-600">₹{payment.student?.dueAmount?.toLocaleString() || 0}</td>
+                <td className="py-3 px-4">{payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString() : 'N/A'}</td>
                 <td className="py-3 px-4">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    payment.status === 'Paid' ? 'bg-green-100 text-green-700' : 
-                    payment.status === 'Partial' ? 'bg-yellow-100 text-yellow-700' : 
+                    payment.status === 'completed' ? 'bg-green-100 text-green-700' : 
+                    payment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 
                     'bg-red-100 text-red-700'
                   }`}>
                     {payment.status}
@@ -109,7 +124,7 @@ const PaymentManagement = () => {
                     <button onClick={() => handleEdit(payment)} className="p-1 text-blue-600 hover:bg-blue-50 rounded">
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(payment.id)} className="p-1 text-red-600 hover:bg-red-50 rounded">
+                    <button onClick={() => handleDelete(payment._id)} className="p-1 text-red-600 hover:bg-red-50 rounded">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>

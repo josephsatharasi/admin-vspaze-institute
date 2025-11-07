@@ -1,20 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, X } from 'lucide-react';
+import api from '../../utils/api';
 
 const CourseManagement = () => {
-  const [courses, setCourses] = useState([
-    { id: 1, name: 'Full Stack Development', duration: '6 months', fee: 45000, students: 245, batches: 5, status: 'Active' },
-    { id: 2, name: 'Data Science & AI', duration: '8 months', fee: 52000, students: 198, batches: 4, status: 'Active' },
-    { id: 3, name: 'Digital Marketing', duration: '4 months', fee: 38000, students: 312, batches: 6, status: 'Active' }
-  ]);
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadCourses();
+  }, []);
+
+  const loadCourses = async () => {
+    try {
+      const response = await api.get('/courses');
+      setCourses(response.data.courses || []);
+    } catch (error) {
+      console.error('Error loading courses:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const [showModal, setShowModal] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [formData, setFormData] = useState({ name: '', duration: '', fee: 0, students: 0, batches: 0, status: 'Active' });
+  const [formData, setFormData] = useState({ name: '', description: '', duration: '', fee: 0, status: 'active' });
 
   const handleAdd = () => {
     setEditingCourse(null);
-    setFormData({ name: '', duration: '', fee: 0, students: 0, batches: 0, status: 'Active' });
+    setFormData({ name: '', description: '', duration: '', fee: 0, status: 'active' });
     setShowModal(true);
   };
 
@@ -24,25 +37,40 @@ const CourseManagement = () => {
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this course?')) {
-      setCourses(courses.filter(c => c.id !== id));
+      try {
+        await api.delete(`/courses/${id}`);
+        setCourses(courses.filter(c => c._id !== id));
+      } catch (error) {
+        alert('Failed to delete course');
+      }
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingCourse) {
-      setCourses(courses.map(c => c.id === editingCourse.id ? { ...formData, id: c.id } : c));
-    } else {
-      setCourses([...courses, { ...formData, id: Date.now() }]);
+    try {
+      if (editingCourse) {
+        const response = await api.put(`/courses/${editingCourse._id}`, formData);
+        setCourses(courses.map(c => c._id === editingCourse._id ? response.data.course : c));
+      } else {
+        const response = await api.post('/courses', formData);
+        setCourses([...courses, response.data.course]);
+      }
+      setShowModal(false);
+    } catch (error) {
+      alert(error.response?.data?.message || 'Operation failed');
     }
-    setShowModal(false);
   };
 
   const filteredCourses = courses.filter(c => 
     c.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64"><div className="text-xl text-gray-600">Loading courses...</div></div>;
+  }
 
   return (
     <div>
@@ -69,14 +97,14 @@ const CourseManagement = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredCourses.map((course) => (
-          <div key={course.id} className="card">
+          <div key={course._id} className="card">
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h3 className="text-lg font-bold text-gray-900">{course.name}</h3>
                 <p className="text-sm text-gray-600">{course.duration}</p>
               </div>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                course.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                course.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
               }`}>
                 {course.status}
               </span>
@@ -84,15 +112,15 @@ const CourseManagement = () => {
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Fee:</span>
-                <span className="font-semibold text-gray-900">₹{course.fee.toLocaleString()}</span>
+                <span className="font-semibold text-gray-900">₹{course.fee?.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Students:</span>
-                <span className="font-semibold text-gray-900">{course.students}</span>
+                <span className="font-semibold text-gray-900">{course.enrolledStudents || 0}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Batches:</span>
-                <span className="font-semibold text-gray-900">{course.batches}</span>
+                <span className="font-semibold text-gray-900">{course.batches || 0}</span>
               </div>
             </div>
             <div className="flex space-x-2 pt-4 border-t">
@@ -100,7 +128,7 @@ const CourseManagement = () => {
                 <Edit className="w-4 h-4" />
                 <span>Edit</span>
               </button>
-              <button onClick={() => handleDelete(course.id)} className="flex-1 flex items-center justify-center space-x-1 py-2 text-red-600 hover:bg-red-50 rounded-lg">
+              <button onClick={() => handleDelete(course._id)} className="flex-1 flex items-center justify-center space-x-1 py-2 text-red-600 hover:bg-red-50 rounded-lg">
                 <Trash2 className="w-4 h-4" />
                 <span>Delete</span>
               </button>
@@ -125,6 +153,14 @@ const CourseManagement = () => {
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
                 required
               />
+              <textarea
+                placeholder="Course Description"
+                value={formData.description || ''}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                rows="3"
+                required
+              />
               <input
                 type="text"
                 placeholder="Duration (e.g., 6 months)"
@@ -141,29 +177,13 @@ const CourseManagement = () => {
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
                 required
               />
-              <input
-                type="number"
-                placeholder="Number of Students"
-                value={formData.students}
-                onChange={(e) => setFormData({...formData, students: parseInt(e.target.value)})}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
-                required
-              />
-              <input
-                type="number"
-                placeholder="Number of Batches"
-                value={formData.batches}
-                onChange={(e) => setFormData({...formData, batches: parseInt(e.target.value)})}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
-                required
-              />
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({...formData, status: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
               >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
               </select>
               <div className="flex space-x-2">
                 <button type="submit" className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">

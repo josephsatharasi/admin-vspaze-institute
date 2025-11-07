@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Search, Bell, BookOpen, Video, HelpCircle, MessageCircle, TrendingUp, Flame, Trophy, Menu } from 'lucide-react';
 import Notifications from './Notifications';
+import api from '../../utils/api';
 
 const Home = ({ onNavigate, onMenuClick }) => {
   const [studentData, setStudentData] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
-    const auth = JSON.parse(localStorage.getItem('student_auth') || '{}');
-    const approvedStudents = JSON.parse(localStorage.getItem('approved_students') || '[]');
-    const student = approvedStudents.find(s => s.id === auth.student?.id);
-    setStudentData(student);
+    fetchStudentData();
   }, []);
 
-  const userCourse = studentData?.enrolledCourses?.[0] || 'Flutter Development Course';
+  const fetchStudentData = async () => {
+    try {
+      const response = await api.get('/student/profile');
+      setStudentData(response.data.student);
+    } catch (error) {
+      console.error('Error fetching student data:', error);
+    }
+  };
+
+  const userCourse = studentData?.enrolledCourses?.[0]?.name || 'No Course Enrolled';
 
   if (showNotifications) {
     return <Notifications onBack={() => setShowNotifications(false)} />;

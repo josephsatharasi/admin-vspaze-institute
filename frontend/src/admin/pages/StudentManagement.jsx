@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, X, Clock } from 'lucide-react';
-import { initializeDummyActivity } from '../utils/initializeDummyActivity';
+import api from '../../utils/api';
 
 const StudentManagement = () => {
   const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadStudents();
   }, []);
 
-  const loadStudents = () => {
-    const approved = JSON.parse(localStorage.getItem('approved_students') || '[]');
-    const defaultStudents = [
-      { id: 1, name: 'John Doe', email: 'john@example.com', phone: '1234567890', course: 'Full Stack Development', batch: 'Batch A-2024', status: 'Active', enrolledCourses: ['Full Stack Development', 'React Advanced'], totalFee: 45000, paidAmount: 30000, dueAmount: 15000, joinDate: '2024-01-15', address: '123 Main St, City', enrollmentType: 'batch' },
-      { id: 2, name: 'Sarah Wilson', email: 'sarah@example.com', phone: '0987654321', course: 'Data Science', batch: 'Batch B-2024', status: 'Active', enrolledCourses: ['Data Science & AI', 'Python'], totalFee: 52000, paidAmount: 52000, dueAmount: 0, joinDate: '2024-02-01', address: '456 Oak Ave, Town', enrollmentType: 'batch' },
-      { id: 3, name: 'Mike Johnson', email: 'mike@example.com', phone: '5551234567', course: 'Digital Marketing', batch: 'Individual', status: 'Active', enrolledCourses: ['Digital Marketing', 'SEO Basics', 'Social Media Marketing'], totalFee: 38000, paidAmount: 20000, dueAmount: 18000, joinDate: '2024-01-20', address: '789 Pine Rd, Village', enrollmentType: 'individual' }
-    ];
-    setStudents([...defaultStudents, ...approved]);
+  const loadStudents = async () => {
+    try {
+      const response = await api.get('/admin/students');
+      setStudents(response.data.students || []);
+    } catch (error) {
+      console.error('Error loading students:', error);
+    } finally {
+      setLoading(false);
+    }
   };
   const [showModal, setShowModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -27,9 +29,7 @@ const StudentManagement = () => {
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
 
-  useEffect(() => {
-    initializeDummyActivity();
-  }, []);
+
 
   const getStudentActivity = (studentId) => {
     const activities = JSON.parse(localStorage.getItem('login_activities') || '[]');
@@ -59,37 +59,41 @@ const StudentManagement = () => {
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this student?')) {
-      const updatedStudents = students.filter(s => s.id !== id);
-      setStudents(updatedStudents);
-      
-      // Save approved students
-      const approved = updatedStudents.filter(s => s.id > 3);
-      localStorage.setItem('approved_students', JSON.stringify(approved));
+      try {
+        await api.delete(`/admin/students/${id}`);
+        setStudents(students.filter(s => s._id !== id));
+      } catch (error) {
+        alert('Failed to delete student');
+      }
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    let updatedStudents;
-    if (editingStudent) {
-      updatedStudents = students.map(s => s.id === editingStudent.id ? { ...formData, id: s.id } : s);
-    } else {
-      updatedStudents = [...students, { ...formData, id: Date.now() }];
+    try {
+      if (editingStudent) {
+        const response = await api.put(`/admin/students/${editingStudent._id}`, formData);
+        setStudents(students.map(s => s._id === editingStudent._id ? response.data.student : s));
+      } else {
+        const response = await api.post('/admin/students', formData);
+        setStudents([...students, response.data.student]);
+      }
+      setShowModal(false);
+    } catch (error) {
+      alert(error.response?.data?.message || 'Operation failed');
     }
-    setStudents(updatedStudents);
-    
-    // Save approved students
-    const approved = updatedStudents.filter(s => s.id > 3);
-    localStorage.setItem('approved_students', JSON.stringify(approved));
-    setShowModal(false);
   };
 
   const filteredStudents = students.filter(s => 
     s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64"><div className="text-xl text-gray-600">Loading students...</div></div>;
+  }
 
   return (
     <div>
@@ -130,12 +134,12 @@ const StudentManagement = () => {
           </thead>
           <tbody>
             {filteredStudents.map((student) => (
-              <tr key={student.id} className="border-b border-gray-100 hover:bg-blue-50 cursor-pointer" onClick={() => { setSelectedStudent(student); setShowDetailModal(true); }}>
+              <tr key={student._id} className="border-b border-gray-100 hover:bg-blue-50 cursor-pointer" onClick={() => { setSelectedStudent(student); setShowDetailModal(true); }}>
                 <td className="py-3 px-4">{student.name}</td>
                 <td className="py-3 px-4">{student.email}</td>
                 <td className="py-3 px-4">{student.phone}</td>
-                <td className="py-3 px-4">{student.course}</td>
-                <td className="py-3 px-4">{student.batch}</td>
+                <td className="py-3 px-4">{student.enrolledCourses?.[0]?.name || 'N/A'}</td>
+                <td className="py-3 px-4">{student.batch?.name || 'Individual'}</td>
                 <td className="py-3 px-4">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     student.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
@@ -144,23 +148,14 @@ const StudentManagement = () => {
                   </span>
                 </td>
                 <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => {
-                      setSelectedActivity({ student, activities: getStudentActivity(student.id) });
-                      setShowActivityModal(true);
-                    }}
-                    className="flex items-center space-x-1 text-blue-600 hover:bg-blue-100 px-2 py-1 rounded"
-                  >
-                    <Clock className="w-4 h-4" />
-                    <span className="text-xs">View</span>
-                  </button>
+                  <span className="text-xs text-gray-500">-</span>
                 </td>
                 <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center space-x-2">
                     <button onClick={() => handleEdit(student)} className="p-1 text-blue-600 hover:bg-blue-100 rounded">
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(student.id)} className="p-1 text-red-600 hover:bg-red-100 rounded">
+                    <button onClick={() => handleDelete(student._id)} className="p-1 text-red-600 hover:bg-red-100 rounded">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -203,19 +198,19 @@ const StudentManagement = () => {
                 </div>
                 <div className="card">
                   <p className="text-sm text-gray-600">Batch</p>
-                  <p className="text-lg font-semibold text-gray-900">{selectedStudent.batch}</p>
+                  <p className="text-lg font-semibold text-gray-900">{selectedStudent.batch?.name || 'Individual'}</p>
                 </div>
                 <div className="card">
                   <p className="text-sm text-gray-600">Join Date</p>
-                  <p className="text-lg font-semibold text-gray-900">{selectedStudent.joinDate}</p>
+                  <p className="text-lg font-semibold text-gray-900">{selectedStudent.joinDate ? new Date(selectedStudent.joinDate).toLocaleDateString() : 'N/A'}</p>
                 </div>
               </div>
 
               <div className="card">
                 <h5 className="font-semibold text-gray-900 mb-3">Enrolled Courses</h5>
                 <div className="flex flex-wrap gap-2">
-                  {selectedStudent.enrolledCourses.map((course, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">{course}</span>
+                  {selectedStudent.enrolledCourses?.map((course, idx) => (
+                    <span key={idx} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">{course?.name || course}</span>
                   ))}
                 </div>
               </div>
@@ -225,37 +220,37 @@ const StudentManagement = () => {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Total Fee:</span>
-                    <span className="font-bold text-gray-900">₹{selectedStudent.totalFee.toLocaleString()}</span>
+                    <span className="font-bold text-gray-900">₹{(selectedStudent.totalFee || 0).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Paid Amount:</span>
-                    <span className="font-bold text-green-600">₹{selectedStudent.paidAmount.toLocaleString()}</span>
+                    <span className="font-bold text-green-600">₹{(selectedStudent.paidAmount || 0).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Due Amount:</span>
-                    <span className="font-bold text-red-600">₹{selectedStudent.dueAmount.toLocaleString()}</span>
+                    <span className="font-bold text-red-600">₹{(selectedStudent.dueAmount || 0).toLocaleString()}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
-                    <div className="bg-green-600 h-3 rounded-full" style={{width: `${(selectedStudent.paidAmount/selectedStudent.totalFee)*100}%`}}></div>
+                    <div className="bg-green-600 h-3 rounded-full" style={{width: `${selectedStudent.totalFee ? (selectedStudent.paidAmount/selectedStudent.totalFee)*100 : 0}%`}}></div>
                   </div>
                 </div>
               </div>
 
               <div className="card">
                 <h5 className="font-semibold text-gray-900 mb-2">Address</h5>
-                <p className="text-gray-600">{selectedStudent.address}</p>
+                <p className="text-gray-600">{selectedStudent.address || 'N/A'}</p>
               </div>
 
               <div className="card">
                 <h5 className="font-semibold text-gray-900 mb-4">Course Progress</h5>
                 <div className="space-y-4">
-                  {selectedStudent.enrolledCourses.map((course, idx) => {
+                  {selectedStudent.enrolledCourses?.map((course, idx) => {
                     const progress = [85, 60, 45][idx] || 50;
                     const status = progress >= 80 ? 'Excellent' : progress >= 60 ? 'Good' : 'In Progress';
                     return (
                       <div key={idx} className="border-b pb-3 last:border-b-0">
                         <div className="flex justify-between items-center mb-2">
-                          <span className="font-medium text-gray-900">{course}</span>
+                          <span className="font-medium text-gray-900">{course?.name || course}</span>
                           <span className={`text-sm px-2 py-1 rounded ${
                             progress >= 80 ? 'bg-green-100 text-green-700' : 
                             progress >= 60 ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'

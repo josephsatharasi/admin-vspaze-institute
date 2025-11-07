@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { GraduationCap, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import api from '../utils/api';
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -8,12 +9,7 @@ const AdminLogin = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const AUTHORIZED_ADMINS = [
-    { email: 'admin@vspaze.com', password: 'admin123', name: 'Admin' },
-    { email: 'superadmin@vspaze.com', password: 'super123', name: 'Super Admin' }
-  ];
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -22,14 +18,23 @@ const AdminLogin = () => {
       return;
     }
 
-    const user = AUTHORIZED_ADMINS.find(u => u.email === formData.email && u.password === formData.password);
+    try {
+      const response = await api.post('/auth/admin/login', {
+        email: formData.email,
+        password: formData.password
+      });
 
-    if (user) {
-      localStorage.setItem('vspaze_auth', JSON.stringify({ isAuthenticated: true, user: { name: user.name, email: user.email } }));
-      navigate('/admin');
-      window.location.reload();
-    } else {
-      setError('Invalid credentials. Access denied.');
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('vspaze_auth', JSON.stringify({
+          isAuthenticated: true,
+          user: response.data.user
+        }));
+        navigate('/admin');
+        window.location.reload();
+      }
+    } catch (error) {
+      setError(error.response?.data?.message || 'Invalid credentials. Access denied.');
     }
   };
 

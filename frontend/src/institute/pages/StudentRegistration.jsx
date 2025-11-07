@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, BookOpen, MapPin, GraduationCap } from 'lucide-react';
-import { courses } from '../data/courses';
+import api from '../../utils/api';
 
 const StudentRegistration = () => {
   const [formData, setFormData] = useState({
@@ -11,24 +11,37 @@ const StudentRegistration = () => {
     address: ''
   });
   const [submitted, setSubmitted] = useState(false);
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    const pending = JSON.parse(localStorage.getItem('pending_students') || '[]');
-    const newStudent = {
-      id: Date.now(),
-      ...formData,
-      batch: 'To be assigned',
-      registeredAt: new Date().toISOString(),
-      role: 'student'
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await api.get('/courses');
+        setCourses(response.data.courses);
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+      }
     };
+    fetchCourses();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     
-    pending.push(newStudent);
-    localStorage.setItem('pending_students', JSON.stringify(pending));
-    
-    setSubmitted(true);
-    setFormData({ name: '', email: '', phone: '', course: '', address: '' });
+    try {
+      const response = await api.post('/auth/student/register', formData);
+      
+      if (response.data.success) {
+        setSubmitted(true);
+        setFormData({ name: '', email: '', phone: '', course: '', address: '' });
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -148,9 +161,10 @@ const StudentRegistration = () => {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-xl transition-all"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Submit Registration
+              {loading ? 'Submitting...' : 'Submit Registration'}
             </button>
           </form>
 

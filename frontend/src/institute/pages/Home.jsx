@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Users, Award, BookOpen, TrendingUp, CheckCircle, Star, Code, Database, Megaphone, Cloud, Palette, Briefcase, DollarSign, Clock as ClockIcon, Target, Play, Zap, Shield, Video, ChevronLeft, ChevronRight, X, Calendar } from 'lucide-react';
-import { courses } from '../data/courses';
 import { faculty } from '../data/faculty';
 import { testimonials } from '../data/testimonials';
+import api from '../../utils/api';
 
 const TestimonialCarousel = ({ testimonials }) => {
   const [current, setCurrent] = useState(0);
@@ -120,6 +120,30 @@ const WatchDemoModal = ({ isOpen, onClose }) => {
 
 const Home = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  const [courses, setCourses] = useState([]);
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const response = await api.get('/courses');
+      setCourses(response.data.courses || []);
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    }
+  };
+
+  const getIconType = (courseName) => {
+    const name = courseName.toLowerCase();
+    if (name.includes('full stack') || name.includes('web')) return 'code';
+    if (name.includes('data') || name.includes('ai')) return 'database';
+    if (name.includes('marketing')) return 'megaphone';
+    if (name.includes('cloud')) return 'cloud';
+    if (name.includes('design') || name.includes('ui')) return 'palette';
+    return 'users';
+  };
 
   return (
     <div className="bg-slate-900">
@@ -155,6 +179,15 @@ const Home = () => {
                   <Play className="w-5 h-5 sm:w-6 sm:h-6" />
                   <span>Watch Demo</span>
                 </button>
+              </div>
+              <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+                <Link to="/student-login" className="text-cyan-300 hover:text-cyan-100 font-semibold text-sm sm:text-base transition-colors">
+                  Already a Student? Login →
+                </Link>
+                <span className="hidden sm:inline text-cyan-400">|</span>
+                <Link to="/teacher-login" className="text-green-300 hover:text-green-100 font-semibold text-sm sm:text-base transition-colors">
+                  Teacher Login →
+                </Link>
               </div>
               <div className="mt-12 flex justify-center md:justify-start items-center space-x-4 sm:space-x-8 text-white">
                 <div className="text-center">
@@ -222,34 +255,37 @@ const Home = () => {
             <p className="text-lg sm:text-xl text-cyan-100">Industry-ready courses for aspiring engineers</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {courses.slice(0, 6).map((course, idx) => (
-              <div key={course.id} className="group bg-slate-800 border border-cyan-500/20 rounded-3xl shadow-xl hover:shadow-2xl hover:shadow-cyan-500/20 transition-all transform hover:-translate-y-3 overflow-hidden">
-                <div className="relative bg-gradient-to-br from-cyan-600 via-blue-600 to-slate-700 p-8 text-center overflow-hidden">
-                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-all"></div>
-                  <div className="relative w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    {course.iconType === 'code' && <Code className="w-10 h-10 text-white" />}
-                    {course.iconType === 'database' && <Database className="w-10 h-10 text-white" />}
-                    {course.iconType === 'megaphone' && <Megaphone className="w-10 h-10 text-white" />}
-                    {course.iconType === 'cloud' && <Cloud className="w-10 h-10 text-white" />}
-                    {course.iconType === 'palette' && <Palette className="w-10 h-10 text-white" />}
-                    {course.iconType === 'users' && <Users className="w-10 h-10 text-white" />}
+            {courses.slice(0, 6).map((course) => {
+              const iconType = getIconType(course.name);
+              return (
+                <div key={course._id} className="group bg-slate-800 border border-cyan-500/20 rounded-3xl shadow-xl hover:shadow-2xl hover:shadow-cyan-500/20 transition-all transform hover:-translate-y-3 overflow-hidden">
+                  <div className="relative bg-gradient-to-br from-cyan-600 via-blue-600 to-slate-700 p-8 text-center overflow-hidden">
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-all"></div>
+                    <div className="relative w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                      {iconType === 'code' && <Code className="w-10 h-10 text-white" />}
+                      {iconType === 'database' && <Database className="w-10 h-10 text-white" />}
+                      {iconType === 'megaphone' && <Megaphone className="w-10 h-10 text-white" />}
+                      {iconType === 'cloud' && <Cloud className="w-10 h-10 text-white" />}
+                      {iconType === 'palette' && <Palette className="w-10 h-10 text-white" />}
+                      {iconType === 'users' && <Users className="w-10 h-10 text-white" />}
+                    </div>
+                    <h3 className="text-2xl font-bold text-white relative">{course.name}</h3>
                   </div>
-                  <h3 className="text-2xl font-bold text-white relative">{course.name}</h3>
-                </div>
-                <div className="p-8">
-                  <p className="text-cyan-100 mb-6 line-clamp-2">{course.description}</p>
-                  <div className="flex justify-between items-center mb-6 pb-6 border-b border-cyan-500/20">
-                    <span className="flex items-center text-cyan-400 font-semibold">
-                      <ClockIcon className="w-5 h-5 mr-2" /> {course.duration}
-                    </span>
-                    <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{course.fee}</span>
+                  <div className="p-8">
+                    <p className="text-cyan-100 mb-6 line-clamp-2">{course.description}</p>
+                    <div className="flex justify-between items-center mb-6 pb-6 border-b border-cyan-500/20">
+                      <span className="flex items-center text-cyan-400 font-semibold">
+                        <ClockIcon className="w-5 h-5 mr-2" /> {course.duration}
+                      </span>
+                      <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">₹{course.fee?.toLocaleString()}</span>
+                    </div>
+                    <Link to={`/course/${course._id}`} className="block text-center bg-gradient-to-r from-cyan-600 to-blue-600 text-white py-4 rounded-xl font-bold hover:shadow-xl hover:shadow-cyan-500/30 transition-all group-hover:scale-105">
+                      Explore Course →
+                    </Link>
                   </div>
-                  <Link to={`/course/${course.id}`} className="block text-center bg-gradient-to-r from-cyan-600 to-blue-600 text-white py-4 rounded-xl font-bold hover:shadow-xl hover:shadow-cyan-500/30 transition-all group-hover:scale-105">
-                    Explore Course →
-                  </Link>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="text-center mt-12">
             <Link to="/courses" className="inline-flex items-center space-x-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-8 py-4 rounded-full text-lg font-bold hover:shadow-2xl hover:shadow-cyan-500/50 transition-all transform hover:scale-105">

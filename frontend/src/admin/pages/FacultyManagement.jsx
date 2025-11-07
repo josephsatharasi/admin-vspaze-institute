@@ -203,7 +203,7 @@ const FacultyManagement = () => {
                 </div>
                 <div className="card">
                   <p className="text-sm text-gray-600">Join Date</p>
-                  <p className="text-lg font-semibold text-gray-900">{selectedFaculty.joinDate}</p>
+                  <p className="text-lg font-semibold text-gray-900">{selectedFaculty.joinDate ? new Date(selectedFaculty.joinDate).toLocaleDateString() : 'N/A'}</p>
                 </div>
               </div>
 
@@ -226,15 +226,15 @@ const FacultyManagement = () => {
               <div className="card">
                 <h5 className="font-semibold text-gray-900 mb-3">Assigned Courses</h5>
                 <div className="flex flex-wrap gap-2">
-                  {selectedFaculty.assignedCourses.map((course, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">{course}</span>
+                  {selectedFaculty.assignedCourses?.map((course, idx) => (
+                    <span key={idx} className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">{course?.name || course}</span>
                   ))}
                 </div>
               </div>
 
               <div className="card bg-gradient-to-br from-green-50 to-blue-50">
                 <h5 className="font-semibold text-gray-900 mb-2">Salary</h5>
-                <p className="text-2xl font-bold text-gray-900">₹{selectedFaculty.salary.toLocaleString()}/month</p>
+                <p className="text-2xl font-bold text-gray-900">₹{(selectedFaculty.salary || 0).toLocaleString()}/month</p>
               </div>
             </div>
           </div>

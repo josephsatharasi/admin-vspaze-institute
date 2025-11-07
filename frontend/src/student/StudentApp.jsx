@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../utils/api';
 import StudentHeader from './components/StudentHeader';
 import StudentSidebar from './components/StudentSidebar';
 import BottomNav from './components/BottomNav';
@@ -30,13 +31,20 @@ function StudentApp() {
     const auth = JSON.parse(localStorage.getItem('student_auth') || '{}');
     if (auth.isAuthenticated) {
       setIsAuthenticated(true);
-      const approvedStudents = JSON.parse(localStorage.getItem('approved_students') || '[]');
-      const student = approvedStudents.find(s => s.id === auth.student?.id);
-      setIsPaid(student?.dueAmount === 0);
+      fetchStudentData();
     } else {
       navigate('/student-login');
     }
   }, [navigate]);
+
+  const fetchStudentData = async () => {
+    try {
+      const response = await api.get('/student/profile');
+      setIsPaid(response.data.student?.dueAmount === 0);
+    } catch (error) {
+      console.error('Error fetching student data:', error);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('student_auth');

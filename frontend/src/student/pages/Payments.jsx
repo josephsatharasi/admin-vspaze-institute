@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CreditCard, DollarSign, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import api from '../../utils/api';
 
 const Payments = () => {
   const [studentData, setStudentData] = useState(null);
@@ -10,14 +11,21 @@ const Payments = () => {
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    const auth = JSON.parse(localStorage.getItem('student_auth') || '{}');
-    const approvedStudents = JSON.parse(localStorage.getItem('approved_students') || '[]');
-    const student = approvedStudents.find(s => s.id === auth.student?.id);
-    setStudentData(student);
-    
-    const history = JSON.parse(localStorage.getItem(`payment_history_${auth.student?.id}`) || '[]');
-    setPaymentHistory(history);
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const [profileRes, paymentsRes] = await Promise.all([
+        api.get('/student/profile'),
+        api.get('/student/payments')
+      ]);
+      setStudentData(profileRes.data.student);
+      setPaymentHistory(paymentsRes.data.payments || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const handlePayNow = () => {
     if (!paymentAmount || paymentAmount <= 0) {
@@ -32,46 +40,29 @@ const Payments = () => {
     setShowGateway(true);
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
     setProcessing(true);
     
-    setTimeout(() => {
+    try {
       const amount = parseFloat(paymentAmount);
-      const updatedStudent = {
-        ...studentData,
-        paidAmount: (studentData.paidAmount || 0) + amount,
-        dueAmount: (studentData.dueAmount || 0) - amount
-      };
-
-      const approvedStudents = JSON.parse(localStorage.getItem('approved_students') || '[]');
-      const updatedStudents = approvedStudents.map(s => 
-        s.id === studentData.id ? updatedStudent : s
-      );
-      localStorage.setItem('approved_students', JSON.stringify(updatedStudents));
-
-      const newPayment = {
-        id: Date.now(),
+      const response = await api.post('/student/payments', {
         amount,
-        date: new Date().toISOString(),
-        status: 'Success',
-        transactionId: 'TXN' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-        method: 'Dummy Gateway'
-      };
+        method: 'Dummy Gateway',
+        transactionId: 'TXN' + Math.random().toString(36).substr(2, 9).toUpperCase()
+      });
 
-      const updatedHistory = [...paymentHistory, newPayment];
-      localStorage.setItem(`payment_history_${studentData.id}`, JSON.stringify(updatedHistory));
-      
-      setPaymentHistory(updatedHistory);
-      setStudentData(updatedStudent);
-      setShowGateway(false);
-      setProcessing(false);
-      setPaymentAmount('');
-      alert('Payment successful! Course unlocked. Please refresh or navigate to Course Content.');
-      
-      if (updatedStudent.dueAmount === 0) {
-        setTimeout(() => window.location.reload(), 2000);
+      if (response.data.success) {
+        alert('Payment successful!');
+        await fetchData();
+        setShowGateway(false);
+        setPaymentAmount('');
       }
-    }, 2000);
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Payment failed. Please try again.');
+    } finally {
+      setProcessing(false);
+    }
   };
 
   if (!studentData) {
@@ -142,14 +133,14 @@ const Payments = () => {
         ) : (
           <div className="space-y-3">
             {paymentHistory.map((payment) => (
-              <div key={payment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div key={payment._id || payment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <div className="flex items-center space-x-4">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                     <CheckCircle className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
                     <p className="font-semibold text-gray-900">₹{payment.amount}</p>
-                    <p className="text-sm text-gray-600">{new Date(payment.date).toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-600">{new Date(payment.paymentDate || payment.date).toLocaleDateString()}</p>
                     <p className="text-xs text-gray-500">TXN: {payment.transactionId}</p>
                   </div>
                 </div>

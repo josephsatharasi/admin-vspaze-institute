@@ -16,8 +16,10 @@ import StudentRegistration from './institute/pages/StudentRegistration';
 import CourseDetail from './institute/pages/CourseDetail';
 import AdminLogin from './pages/AdminLogin';
 import StudentLogin from './pages/StudentLogin';
+import TeacherLogin from './pages/TeacherLogin';
 import AdminApp from './App';
 import StudentApp from './student/StudentApp';
+import TeacherApp from './teacher/TeacherApp';
 
 function HomeRedirect() {
   const navigate = useNavigate();
@@ -58,11 +60,17 @@ function AppRouter() {
         {/* Student Login */}
         <Route path="/student-login" element={<StudentLogin />} />
 
+        {/* Teacher Login */}
+        <Route path="/teacher-login" element={<TeacherLogin />} />
+
         {/* Admin Dashboard */}
         <Route path="/admin" element={<AdminApp />} />
 
         {/* Student Dashboard */}
         <Route path="/student" element={<StudentApp />} />
+
+        {/* Teacher Dashboard */}
+        <Route path="/teacher" element={<TeacherApp />} />
       </Routes>
     </BrowserRouter>
   );

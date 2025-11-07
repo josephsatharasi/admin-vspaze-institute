@@ -105,6 +105,12 @@ const InstituteNavbar = () => {
               Student Login
             </Link>
             <Link
+              to="/teacher-login"
+              className="text-gray-700 hover:text-green-600 font-medium transition-colors"
+            >
+              Teacher Login
+            </Link>
+            <Link
               to="/admin-login"
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
@@ -194,6 +200,14 @@ const InstituteNavbar = () => {
               >
                 <User className="w-5 h-5" />
                 <span className="font-medium">Student Login</span>
+              </Link>
+              <Link
+                to="/teacher-login"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-3 px-4 py-3 rounded-lg mb-2 text-gray-700 hover:bg-green-100 transition-all"
+              >
+                <Users className="w-5 h-5" />
+                <span className="font-medium">Teacher Login</span>
               </Link>
               <Link
                 to="/admin-login"

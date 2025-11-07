@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import api from '../utils/api';
 
 const StudentLogin = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -15,7 +16,7 @@ const StudentLogin = () => {
     }
   }, [navigate]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -24,23 +25,22 @@ const StudentLogin = () => {
       return;
     }
 
-    const approvedStudents = JSON.parse(localStorage.getItem('approved_students') || '[]');
-    const student = approvedStudents.find(s => s.email === formData.email && s.password === formData.password);
+    try {
+      const response = await api.post('/auth/student/login', {
+        email: formData.email,
+        password: formData.password
+      });
 
-    if (student) {
-      localStorage.setItem('student_auth', JSON.stringify({ 
-        isAuthenticated: true, 
-        student: { 
-          id: student.id,
-          name: student.name, 
-          email: student.email,
-          phone: student.phone,
-          enrolledCourses: student.enrolledCourses || []
-        } 
-      }));
-      navigate('/student');
-    } else {
-      setError('Invalid credentials or account not approved yet.');
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('student_auth', JSON.stringify({
+          isAuthenticated: true,
+          student: response.data.user
+        }));
+        navigate('/student');
+      }
+    } catch (error) {
+      setError(error.response?.data?.message || 'Invalid credentials or account not approved yet.');
     }
   };
 

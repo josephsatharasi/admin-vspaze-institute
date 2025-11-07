@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User, Mail, Phone, BookOpen, FileText, GraduationCap, Award } from 'lucide-react';
+import api from '../../utils/api';
 
 const TeacherRegistration = () => {
   const [formData, setFormData] = useState({
@@ -13,23 +14,24 @@ const TeacherRegistration = () => {
     bio: ''
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     
-    const pending = JSON.parse(localStorage.getItem('pending_faculty') || '[]');
-    const newFaculty = {
-      id: Date.now(),
-      ...formData,
-      appliedAt: new Date().toISOString(),
-      status: 'pending'
-    };
-    
-    pending.push(newFaculty);
-    localStorage.setItem('pending_faculty', JSON.stringify(pending));
-    
-    setSubmitted(true);
-    setFormData({ name: '', email: '', phone: '', specialization: '', experience: '', qualification: '', resume: '', bio: '' });
+    try {
+      const response = await api.post('/auth/faculty/register', formData);
+      
+      if (response.data.success) {
+        setSubmitted(true);
+        setFormData({ name: '', email: '', phone: '', specialization: '', experience: '', qualification: '', resume: '', bio: '' });
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || 'Application failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -196,9 +198,10 @@ const TeacherRegistration = () => {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-xl transition-all"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Submit Application
+              {loading ? 'Submitting...' : 'Submit Application'}
             </button>
           </form>
 

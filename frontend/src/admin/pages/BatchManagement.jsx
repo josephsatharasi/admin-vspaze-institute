@@ -1,12 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, X } from 'lucide-react';
+import api from '../../utils/api';
 
 const BatchManagement = () => {
-  const [batches, setBatches] = useState([
-    { id: 1, name: 'Batch A-2024', course: 'Full Stack Development', students: 45, faculty: 'Dr. Sarah Johnson', startDate: '2024-01-15', status: 'Active' },
-    { id: 2, name: 'Batch B-2024', course: 'Data Science & AI', students: 38, faculty: 'Prof. Michael Chen', startDate: '2024-02-01', status: 'Active' },
-    { id: 3, name: 'Batch C-2024', course: 'Digital Marketing', students: 52, faculty: 'Dr. Emily Davis', startDate: '2024-01-20', status: 'Active' }
-  ]);
+  const [batches, setBatches] = useState([]);
+
+  useEffect(() => {
+    fetchBatches();
+  }, []);
+
+  const fetchBatches = async () => {
+    try {
+      const response = await api.get('/batches');
+      setBatches(response.data.batches || []);
+    } catch (error) {
+      console.error('Error fetching batches:', error);
+    }
+  };
   const [showModal, setShowModal] = useState(false);
   const [editingBatch, setEditingBatch] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,30 +30,50 @@ const BatchManagement = () => {
 
   const handleEdit = (batch) => {
     setEditingBatch(batch);
-    setFormData(batch);
+    setFormData({
+      name: batch.name,
+      course: batch.course?._id || batch.course,
+      students: batch.students?.length || 0,
+      faculty: batch.faculty?._id || batch.faculty,
+      startDate: batch.startDate ? new Date(batch.startDate).toISOString().split('T')[0] : '',
+      status: batch.status
+    });
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this batch?')) {
-      setBatches(batches.filter(b => b.id !== id));
+      try {
+        await api.delete(`/batches/${id}`);
+        await fetchBatches();
+      } catch (error) {
+        console.error('Error deleting batch:', error);
+        alert('Failed to delete batch');
+      }
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingBatch) {
-      setBatches(batches.map(b => b.id === editingBatch.id ? { ...formData, id: b.id } : b));
-    } else {
-      setBatches([...batches, { ...formData, id: Date.now() }]);
+    try {
+      if (editingBatch) {
+        await api.put(`/batches/${editingBatch._id}`, formData);
+      } else {
+        await api.post('/batches', formData);
+      }
+      await fetchBatches();
+      setShowModal(false);
+    } catch (error) {
+      console.error('Error saving batch:', error);
+      alert('Failed to save batch');
     }
-    setShowModal(false);
   };
 
-  const filteredBatches = batches.filter(b => 
-    b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    b.course.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredBatches = batches.filter(b => {
+    const courseName = typeof b.course === 'object' ? b.course?.name : b.course;
+    return b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (courseName && courseName.toLowerCase().includes(searchTerm.toLowerCase()));
+  });
 
   return (
     <div>
@@ -83,12 +113,12 @@ const BatchManagement = () => {
           </thead>
           <tbody>
             {filteredBatches.map((batch) => (
-              <tr key={batch.id} className="border-b border-gray-100 hover:bg-gray-50">
+              <tr key={batch._id} className="border-b border-gray-100 hover:bg-gray-50">
                 <td className="py-3 px-4 font-medium">{batch.name}</td>
-                <td className="py-3 px-4">{batch.course}</td>
-                <td className="py-3 px-4">{batch.students}</td>
-                <td className="py-3 px-4">{batch.faculty}</td>
-                <td className="py-3 px-4">{batch.startDate}</td>
+                <td className="py-3 px-4">{batch.course?.name || batch.course}</td>
+                <td className="py-3 px-4">{batch.students?.length || 0}</td>
+                <td className="py-3 px-4">{batch.faculty?.name || batch.faculty}</td>
+                <td className="py-3 px-4">{batch.startDate ? new Date(batch.startDate).toLocaleDateString() : 'N/A'}</td>
                 <td className="py-3 px-4">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     batch.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
@@ -101,7 +131,7 @@ const BatchManagement = () => {
                     <button onClick={() => handleEdit(batch)} className="p-1 text-blue-600 hover:bg-blue-50 rounded">
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(batch.id)} className="p-1 text-red-600 hover:bg-red-50 rounded">
+                    <button onClick={() => handleDelete(batch._id)} className="p-1 text-red-600 hover:bg-red-50 rounded">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>

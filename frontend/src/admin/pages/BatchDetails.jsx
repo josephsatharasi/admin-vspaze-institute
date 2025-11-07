@@ -25,7 +25,7 @@ const BatchDetails = ({ batch, onBack }) => {
         <div className="flex items-start justify-between mb-4">
           <div>
             <h2 className="text-3xl font-bold text-gray-900">{batch.name}</h2>
-            <p className="text-lg text-gray-600">{batch.course}</p>
+            <p className="text-lg text-gray-600">{batch.course?.name || batch.course}</p>
           </div>
           <span className={`px-4 py-2 rounded-full text-sm font-medium ${
             batch.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
@@ -39,35 +39,35 @@ const BatchDetails = ({ batch, onBack }) => {
             <Users className="w-8 h-8 text-blue-600" />
             <div>
               <p className="text-sm text-gray-600">Students</p>
-              <p className="text-2xl font-bold text-gray-900">{batch.students}</p>
+              <p className="text-2xl font-bold text-gray-900">{batch.students?.length || 0}</p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
             <GraduationCap className="w-8 h-8 text-green-600" />
             <div>
               <p className="text-sm text-gray-600">Faculty</p>
-              <p className="text-2xl font-bold text-gray-900">{batch.faculty}</p>
+              <p className="text-2xl font-bold text-gray-900">{batch.faculty?.name || 'N/A'}</p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
             <Clock className="w-8 h-8 text-purple-600" />
             <div>
               <p className="text-sm text-gray-600">Duration</p>
-              <p className="text-2xl font-bold text-gray-900">{batch.duration}</p>
+              <p className="text-2xl font-bold text-gray-900">{batch.course?.duration || 'N/A'}</p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
             <TrendingUp className="w-8 h-8 text-orange-600" />
             <div>
               <p className="text-sm text-gray-600">Progress</p>
-              <p className="text-2xl font-bold text-gray-900">{batch.progress}%</p>
+              <p className="text-2xl font-bold text-gray-900">{batch.progress || 0}%</p>
             </div>
           </div>
         </div>
 
         <div className="mt-6">
           <div className="w-full bg-gray-200 rounded-full h-4">
-            <div className="bg-blue-600 h-4 rounded-full transition-all" style={{width: `${batch.progress}%`}}></div>
+            <div className="bg-blue-600 h-4 rounded-full transition-all" style={{width: `${batch.progress || 0}%`}}></div>
           </div>
         </div>
       </div>
@@ -76,7 +76,7 @@ const BatchDetails = ({ batch, onBack }) => {
       <div className="card mb-6">
         <h3 className="text-xl font-semibold text-gray-900 mb-4">Course Subjects</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {batch.subjects?.map((subject, index) => (
+          {batch.course?.subjects?.map((subject, index) => (
             <div 
               key={index} 
               onClick={() => setSelectedSubject(subject)}

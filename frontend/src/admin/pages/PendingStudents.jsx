@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, X, Eye, Lock } from 'lucide-react';
-import { initializePendingStudents } from '../utils/initializePendingStudents';
+import api from '../../utils/api';
 
 const PendingStudents = () => {
   const [pendingStudents, setPendingStudents] = useState([]);
@@ -14,13 +14,16 @@ const PendingStudents = () => {
   const [approvedCredentials, setApprovedCredentials] = useState(null);
 
   useEffect(() => {
-    initializePendingStudents();
     loadPendingStudents();
   }, []);
 
-  const loadPendingStudents = () => {
-    const pending = JSON.parse(localStorage.getItem('pending_students') || '[]');
-    setPendingStudents(pending);
+  const loadPendingStudents = async () => {
+    try {
+      const response = await api.get('/admin/students/pending');
+      setPendingStudents(response.data.students || []);
+    } catch (error) {
+      console.error('Error loading pending students:', error);
+    }
   };
 
   const handleApproveClick = (student) => {
@@ -30,7 +33,7 @@ const PendingStudents = () => {
     setCourseFee('50000');
   };
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     if (!password.trim()) {
       alert('Please enter a password for the student');
       return;
@@ -46,39 +49,33 @@ const PendingStudents = () => {
       return;
     }
 
-    // Remove from pending
-    const updatedPending = pendingStudents.filter(s => s.id !== selectedStudent.id);
-    localStorage.setItem('pending_students', JSON.stringify(updatedPending));
+    try {
+      const response = await api.put(`/admin/students/approve/${selectedStudent._id}`, {
+        password,
+        totalFee: parseFloat(courseFee),
+        enrolledCourses: []
+      });
 
-    // Add to approved students with generated ID
-    const students = JSON.parse(localStorage.getItem('approved_students') || '[]');
-    const fee = parseFloat(courseFee);
-    const newStudent = {
-      ...selectedStudent,
-      password,
-      status: 'Active',
-      enrolledCourses: [selectedStudent.course],
-      totalFee: fee,
-      paidAmount: 0,
-      dueAmount: fee,
-      joinDate: new Date().toISOString().split('T')[0],
-      enrollmentType: 'individual'
-    };
-    students.push(newStudent);
-    localStorage.setItem('approved_students', JSON.stringify(students));
-
-    setPendingStudents(updatedPending);
-    setShowPasswordModal(false);
-    setApprovedCredentials({ email: selectedStudent.email, password });
-    setShowSuccessModal(true);
-    setSelectedStudent(null);
+      if (response.data.success) {
+        setPendingStudents(pendingStudents.filter(s => s._id !== selectedStudent._id));
+        setShowPasswordModal(false);
+        setApprovedCredentials({ email: selectedStudent.email, password });
+        setShowSuccessModal(true);
+        setSelectedStudent(null);
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to approve student');
+    }
   };
 
-  const handleReject = (id) => {
+  const handleReject = async (id) => {
     if (window.confirm('Are you sure you want to reject this registration?')) {
-      const updated = pendingStudents.filter(s => s.id !== id);
-      localStorage.setItem('pending_students', JSON.stringify(updated));
-      setPendingStudents(updated);
+      try {
+        await api.delete(`/admin/students/${id}`);
+        setPendingStudents(pendingStudents.filter(s => s._id !== id));
+      } catch (error) {
+        alert('Failed to reject student');
+      }
     }
   };
 
@@ -107,7 +104,7 @@ const PendingStudents = () => {
       ) : (
         <div className="grid gap-4">
           {pendingStudents.map((student) => (
-            <div key={student.id} className="card hover:shadow-lg transition-shadow">
+            <div key={student._id} className="card hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4 flex-1">
                   <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
@@ -121,7 +118,7 @@ const PendingStudents = () => {
                     <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
                       <span>📞 {student.phone}</span>
                       <span>📚 {student.course}</span>
-                      <span>📅 {new Date(student.registeredAt).toLocaleDateString()}</span>
+                      <span>📅 {new Date(student.createdAt).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
@@ -144,7 +141,7 @@ const PendingStudents = () => {
                     <span>Approve</span>
                   </button>
                   <button
-                    onClick={() => handleReject(student.id)}
+                    onClick={() => handleReject(student._id)}
                     className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
                   >
                     <X className="w-5 h-5" />

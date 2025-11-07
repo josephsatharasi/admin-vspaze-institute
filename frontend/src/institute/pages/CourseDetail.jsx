@@ -1,59 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Clock, DollarSign, Users, Award, ChevronDown, ChevronUp, BookOpen, FileText, ClipboardList, Code } from 'lucide-react';
-import { courses } from '../data/courses';
+import api from '../../utils/api';
 
 const CourseDetail = () => {
   const { id } = useParams();
-  const course = courses.find(c => c.id === parseInt(id));
+  const [course, setCourse] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [expandedModule, setExpandedModule] = useState(null);
 
-  if (!course) {
-    return <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">Course not found</div>;
+  useEffect(() => {
+    fetchCourse();
+  }, [id]);
+
+  const fetchCourse = async () => {
+    try {
+      const response = await api.get(`/courses/${id}`);
+      setCourse(response.data.course);
+    } catch (error) {
+      console.error('Error fetching course:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center"><div className="text-2xl">Loading course...</div></div>;
   }
 
-  const courseModules = [
-    {
-      id: 1,
-      title: 'Introduction & Fundamentals',
-      topics: ['Course Overview', 'Setup Environment', 'Basic Concepts', 'Tools & Resources'],
-      tests: 2,
-      quizzes: 3,
-      assignments: 2
-    },
-    {
-      id: 2,
-      title: 'Core Concepts',
-      topics: ['Advanced Theory', 'Practical Implementation', 'Best Practices', 'Industry Standards'],
-      tests: 3,
-      quizzes: 4,
-      assignments: 3
-    },
-    {
-      id: 3,
-      title: 'Hands-on Projects',
-      topics: ['Project 1: Beginner Level', 'Project 2: Intermediate', 'Project 3: Advanced', 'Capstone Project'],
-      tests: 2,
-      quizzes: 2,
-      assignments: 4
-    },
-    {
-      id: 4,
-      title: 'Advanced Topics',
-      topics: ['Performance Optimization', 'Security Best Practices', 'Scalability', 'Deployment'],
-      tests: 3,
-      quizzes: 3,
-      assignments: 3
-    },
-    {
-      id: 5,
-      title: 'Final Assessment',
-      topics: ['Mock Interviews', 'Final Project', 'Certification Exam', 'Career Guidance'],
-      tests: 1,
-      quizzes: 1,
-      assignments: 1
-    }
-  ];
+  if (!course) {
+    return <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center"><div className="text-2xl">Course not found</div></div>;
+  }
+
+  const courseModules = course.syllabus || [];
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -75,11 +54,11 @@ const CourseDetail = () => {
                 </div>
                 <div className="flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
                   <DollarSign className="w-5 h-5 mr-2 text-cyan-300" />
-                  <span className="text-white font-semibold">{course.fee}</span>
+                  <span className="text-white font-semibold">₹{course.fee?.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
                   <Users className="w-5 h-5 mr-2 text-cyan-300" />
-                  <span className="text-white font-semibold">500+ Students</span>
+                  <span className="text-white font-semibold">{course.enrolledStudents || 0} Students</span>
                 </div>
                 <div className="flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
                   <Award className="w-5 h-5 mr-2 text-cyan-300" />
@@ -104,18 +83,18 @@ const CourseDetail = () => {
           <div className="md:col-span-2">
             <h2 className="text-4xl font-extrabold text-white mb-8">Course Curriculum</h2>
             <div className="space-y-4">
-              {courseModules.map((module) => (
-                <div key={module.id} className="bg-slate-800 border border-cyan-500/20 rounded-2xl overflow-hidden">
-                  <button onClick={() => setExpandedModule(expandedModule === module.id ? null : module.id)} className="w-full flex items-center justify-between p-6 hover:bg-slate-700/50 transition-colors">
+              {courseModules.length > 0 ? courseModules.map((module, idx) => (
+                <div key={idx} className="bg-slate-800 border border-cyan-500/20 rounded-2xl overflow-hidden">
+                  <button onClick={() => setExpandedModule(expandedModule === idx ? null : idx)} className="w-full flex items-center justify-between p-6 hover:bg-slate-700/50 transition-colors">
                     <div className="flex items-center space-x-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center">
-                        <span className="text-white font-bold text-lg">{module.id}</span>
+                        <span className="text-white font-bold text-lg">{idx + 1}</span>
                       </div>
-                      <h3 className="text-xl font-bold text-white">{module.title}</h3>
+                      <h3 className="text-xl font-bold text-white">{module.module}</h3>
                     </div>
-                    {expandedModule === module.id ? <ChevronUp className="w-6 h-6 text-cyan-400" /> : <ChevronDown className="w-6 h-6 text-cyan-400" />}
+                    {expandedModule === idx ? <ChevronUp className="w-6 h-6 text-cyan-400" /> : <ChevronDown className="w-6 h-6 text-cyan-400" />}
                   </button>
-                  {expandedModule === module.id && (
+                  {expandedModule === idx && (
                     <div className="px-6 pb-6 border-t border-cyan-500/20">
                       <div className="mt-4 space-y-4">
                         <div>
@@ -124,36 +103,23 @@ const CourseDetail = () => {
                             Topics Covered
                           </h4>
                           <ul className="space-y-2">
-                            {module.topics.map((topic, idx) => (
-                              <li key={idx} className="text-cyan-100 flex items-center">
+                            {module.topics.map((topic, topicIdx) => (
+                              <li key={topicIdx} className="text-cyan-100 flex items-center">
                                 <span className="w-2 h-2 bg-cyan-500 rounded-full mr-3"></span>
                                 {topic}
                               </li>
                             ))}
                           </ul>
                         </div>
-                        <div className="grid grid-cols-3 gap-4 pt-4">
-                          <div className="bg-slate-700/50 p-4 rounded-xl text-center">
-                            <FileText className="w-6 h-6 text-cyan-400 mx-auto mb-2" />
-                            <div className="text-2xl font-bold text-white">{module.tests}</div>
-                            <div className="text-sm text-cyan-300">Tests</div>
-                          </div>
-                          <div className="bg-slate-700/50 p-4 rounded-xl text-center">
-                            <ClipboardList className="w-6 h-6 text-cyan-400 mx-auto mb-2" />
-                            <div className="text-2xl font-bold text-white">{module.quizzes}</div>
-                            <div className="text-sm text-cyan-300">Quizzes</div>
-                          </div>
-                          <div className="bg-slate-700/50 p-4 rounded-xl text-center">
-                            <Code className="w-6 h-6 text-cyan-400 mx-auto mb-2" />
-                            <div className="text-2xl font-bold text-white">{module.assignments}</div>
-                            <div className="text-sm text-cyan-300">Assignments</div>
-                          </div>
-                        </div>
                       </div>
                     </div>
                   )}
                 </div>
-              ))}
+              )) : (
+                <div className="bg-slate-800 border border-cyan-500/20 rounded-2xl p-8 text-center">
+                  <p className="text-cyan-100">Syllabus details coming soon...</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -162,7 +128,7 @@ const CourseDetail = () => {
             <div className="bg-slate-800 border border-cyan-500/20 rounded-2xl p-6 sticky top-6">
               <h3 className="text-2xl font-bold text-white mb-6">What You'll Learn</h3>
               <ul className="space-y-3 mb-6">
-                {course.syllabus.map((item, idx) => (
+                {course.subjects && course.subjects.map((item, idx) => (
                   <li key={idx} className="flex items-start text-cyan-100">
                     <span className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
                       <span className="text-cyan-400 text-xs">✓</span>

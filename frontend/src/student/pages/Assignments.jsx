@@ -1,66 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Upload, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import api from '../../utils/api';
 
 const Assignments = () => {
   const [studentData, setStudentData] = useState(null);
   const [isPaid, setIsPaid] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [assignments, setAssignments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const auth = JSON.parse(localStorage.getItem('student_auth') || '{}');
-    const approvedStudents = JSON.parse(localStorage.getItem('approved_students') || '[]');
-    const student = approvedStudents.find(s => s.id === auth.student?.id);
-    setStudentData(student);
-    setIsPaid(student?.dueAmount === 0);
+    fetchData();
   }, []);
 
-  const assignments = [
-    {
-      id: 1,
-      title: 'HTML & CSS Portfolio Website',
-      subject: 'Web Development',
-      dueDate: '2024-02-01',
-      status: 'Submitted',
-      grade: '95/100',
-      description: 'Create a responsive portfolio website using HTML and CSS'
-    },
-    {
-      id: 2,
-      title: 'JavaScript Calculator',
-      subject: 'JavaScript',
-      dueDate: '2024-02-05',
-      status: 'Submitted',
-      grade: '88/100',
-      description: 'Build a functional calculator using vanilla JavaScript'
-    },
-    {
-      id: 3,
-      title: 'React Todo Application',
-      subject: 'React',
-      dueDate: '2024-02-10',
-      status: 'Pending',
-      grade: null,
-      description: 'Create a todo app with CRUD operations using React hooks'
-    },
-    {
-      id: 4,
-      title: 'REST API Development',
-      subject: 'Backend',
-      dueDate: '2024-02-15',
-      status: 'Not Started',
-      grade: null,
-      description: 'Build a RESTful API using Node.js and Express'
-    },
-    {
-      id: 5,
-      title: 'Full Stack E-commerce',
-      subject: 'Full Stack',
-      dueDate: '2024-02-25',
-      status: 'Not Started',
-      grade: null,
-      description: 'Create a complete e-commerce application with authentication'
+  const fetchData = async () => {
+    try {
+      const [profileRes, assignmentsRes] = await Promise.all([
+        api.get('/student/profile'),
+        api.get('/student/assignments')
+      ]);
+      setStudentData(profileRes.data.student);
+      setIsPaid(profileRes.data.student?.dueAmount === 0);
+      setAssignments(assignmentsRes.data.assignments || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64"><div className="text-xl text-gray-600">Loading...</div></div>;
+  }
 
   if (!isPaid) {
     return (
@@ -103,7 +76,7 @@ const Assignments = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-4">
-        {assignments.map((assignment) => (
+        {assignments.length > 0 ? assignments.map((assignment) => (
           <div key={assignment.id} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg transition-shadow">
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -135,7 +108,13 @@ const Assignments = () => {
               </div>
             </div>
           </div>
-        ))}
+        )) : (
+          <div className="card text-center py-12">
+            <FileText className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Assignments Yet</h3>
+            <p className="text-gray-600">Your assignments will appear here once they are created.</p>
+          </div>
+        )}
       </div>
     </div>
   );
