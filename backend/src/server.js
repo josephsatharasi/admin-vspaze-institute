@@ -18,6 +18,9 @@ const facultyRoutes = require('./routes/facultyRoutes');
 // Initialize Express
 const app = express();
 
+// Trust proxy for Render
+app.set('trust proxy', 1);
+
 // Connect Database
 connectDB();
 
