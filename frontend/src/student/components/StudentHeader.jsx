@@ -7,7 +7,7 @@ const StudentHeader = ({ onMenuClick, onLogout, onNotificationClick, hideOnMobil
 
   return (
     <header className={`bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30 ${hideOnMobile ? 'hidden md:block' : ''}`}>
-      <div className="flex items-center justify-between px-4 py-3">
+      <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center space-x-4">
           <button onClick={onMenuClick} className="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
             <Menu className="w-6 h-6 text-gray-600" />

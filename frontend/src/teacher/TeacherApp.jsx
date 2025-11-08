@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Home, BookOpen, FileText, ClipboardList, Users, Calendar, LogOut, Menu, X } from 'lucide-react';
+import { Home, BookOpen, FileText, ClipboardList, Users, Calendar, LogOut, Menu, X, Megaphone } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import MyCourses from './pages/MyCourses';
 import Assignments from './pages/Assignments';
 import Tests from './pages/Tests';
 import Students from './pages/Students';
 import Schedule from './pages/Schedule';
+import Announcements from './pages/Announcements';
 import api from '../utils/api';
 
 const TeacherApp = () => {
@@ -23,6 +24,9 @@ const TeacherApp = () => {
       setTeacherData(response.data.faculty);
     } catch (error) {
       console.error('Error fetching teacher data:', error);
+      // ============ TEMPORARY: USE DEMO DATA FOR CLIENT DEMO ============
+      const auth = JSON.parse(localStorage.getItem('teacher_auth') || '{}');
+      setTeacherData(auth.teacher || { name: 'Demo Teacher', specialization: 'Full Stack Development' });
     }
   };
 
@@ -37,18 +41,20 @@ const TeacherApp = () => {
     { id: 'assignments', label: 'Assignments', icon: FileText },
     { id: 'tests', label: 'Tests', icon: ClipboardList },
     { id: 'students', label: 'Students', icon: Users },
+    { id: 'announcements', label: 'Announcements', icon: Megaphone },
     { id: 'schedule', label: 'Schedule', icon: Calendar }
   ];
 
   const renderPage = () => {
     switch (currentPage) {
-      case 'dashboard': return <Dashboard />;
+      case 'dashboard': return <Dashboard onNavigate={setCurrentPage} />;
       case 'courses': return <MyCourses />;
       case 'assignments': return <Assignments />;
       case 'tests': return <Tests />;
       case 'students': return <Students />;
+      case 'announcements': return <Announcements />;
       case 'schedule': return <Schedule />;
-      default: return <Dashboard />;
+      default: return <Dashboard onNavigate={setCurrentPage} />;
     }
   };
 

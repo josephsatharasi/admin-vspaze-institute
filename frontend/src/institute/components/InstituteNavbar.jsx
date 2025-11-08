@@ -99,19 +99,41 @@ const InstituteNavbar = () => {
               )
             ))}
             <Link
-              to="/student-login"
+              to="/student"
+              onClick={() => {
+                // ============ TEMPORARY: DIRECT LOGIN FOR CLIENT DEMO ============
+                localStorage.setItem('student_auth', JSON.stringify({
+                  isAuthenticated: true,
+                  student: { id: 'demo-student', name: 'Demo Student', email: 'demo@student.com', enrolledCourses: ['Full Stack Development'], dueAmount: 0 }
+                }));
+              }}
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
               Student Login
             </Link>
             <Link
-              to="/teacher-login"
+              to="/teacher"
+              onClick={() => {
+                // ============ TEMPORARY: DIRECT LOGIN FOR CLIENT DEMO ============
+                localStorage.setItem('teacher_auth', JSON.stringify({
+                  isAuthenticated: true,
+                  teacher: { id: 'demo-teacher', name: 'Demo Teacher', email: 'demo@teacher.com', assignedCourses: ['Full Stack Development'] }
+                }));
+              }}
               className="text-gray-700 hover:text-green-600 font-medium transition-colors"
             >
               Teacher Login
             </Link>
             <Link
-              to="/admin-login"
+              to="/admin"
+              onClick={() => {
+                // ============ TEMPORARY: DIRECT LOGIN FOR CLIENT DEMO ============
+                localStorage.setItem('vspaze_auth', JSON.stringify({
+                  isAuthenticated: true,
+                  user: { id: 'demo-admin', name: 'Demo Admin', email: 'admin@vspaze.com', role: 'admin' }
+                }));
+                window.location.href = '/admin';
+              }}
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
               Admin Login
@@ -194,24 +216,46 @@ const InstituteNavbar = () => {
             
             <div className="border-t border-gray-200 mt-4 pt-4">
               <Link
-                to="/student-login"
-                onClick={() => setIsOpen(false)}
+                to="/student"
+                onClick={() => {
+                  // ============ TEMPORARY: DIRECT LOGIN FOR CLIENT DEMO ============
+                  localStorage.setItem('student_auth', JSON.stringify({
+                    isAuthenticated: true,
+                    student: { id: 'demo-student', name: 'Demo Student', email: 'demo@student.com', enrolledCourses: ['Full Stack Development'], dueAmount: 0 }
+                  }));
+                  setIsOpen(false);
+                }}
                 className="flex items-center space-x-3 px-4 py-3 rounded-lg mb-2 text-gray-700 hover:bg-gray-100 transition-all"
               >
                 <User className="w-5 h-5" />
                 <span className="font-medium">Student Login</span>
               </Link>
               <Link
-                to="/teacher-login"
-                onClick={() => setIsOpen(false)}
+                to="/teacher"
+                onClick={() => {
+                  // ============ TEMPORARY: DIRECT LOGIN FOR CLIENT DEMO ============
+                  localStorage.setItem('teacher_auth', JSON.stringify({
+                    isAuthenticated: true,
+                    teacher: { id: 'demo-teacher', name: 'Demo Teacher', email: 'demo@teacher.com', assignedCourses: ['Full Stack Development'] }
+                  }));
+                  setIsOpen(false);
+                }}
                 className="flex items-center space-x-3 px-4 py-3 rounded-lg mb-2 text-gray-700 hover:bg-green-100 transition-all"
               >
                 <Users className="w-5 h-5" />
                 <span className="font-medium">Teacher Login</span>
               </Link>
               <Link
-                to="/admin-login"
-                onClick={() => setIsOpen(false)}
+                to="/admin"
+                onClick={() => {
+                  // ============ TEMPORARY: DIRECT LOGIN FOR CLIENT DEMO ============
+                  localStorage.setItem('vspaze_auth', JSON.stringify({
+                    isAuthenticated: true,
+                    user: { id: 'demo-admin', name: 'Demo Admin', email: 'admin@vspaze.com', role: 'admin' }
+                  }));
+                  setIsOpen(false);
+                  window.location.href = '/admin';
+                }}
                 className="flex items-center space-x-3 px-4 py-3 rounded-lg mb-2 text-gray-700 hover:bg-gray-100 transition-all"
               >
                 <Shield className="w-5 h-5" />

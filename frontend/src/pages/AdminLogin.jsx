@@ -11,6 +11,24 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // ============ TEMPORARY: AUTHENTICATION DISABLED FOR CLIENT DEMO ============
+    // TODO: UNCOMMENT BELOW CODE TO RE-ENABLE AUTHENTICATION
+    
+    // Direct login without authentication for demo
+    localStorage.setItem('vspaze_auth', JSON.stringify({
+      isAuthenticated: true,
+      user: {
+        id: 'demo-admin',
+        name: 'Demo Admin',
+        email: 'admin@vspaze.com',
+        role: 'admin'
+      }
+    }));
+    navigate('/admin');
+    window.location.reload();
+    
+    /* ============ ORIGINAL AUTHENTICATION CODE (COMMENTED FOR DEMO) ============
     setError('');
 
     if (!formData.email || !formData.password) {
@@ -36,6 +54,7 @@ const AdminLogin = () => {
     } catch (error) {
       setError(error.response?.data?.message || 'Invalid credentials. Access denied.');
     }
+    ============================================================================ */
   };
 
   return (

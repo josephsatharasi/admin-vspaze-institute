@@ -109,7 +109,7 @@ const Jobs = ({ onMenuClick }) => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 py-6 space-y-4">
         {jobs.map((job) => (
           <div key={job.id} className="bg-white rounded-2xl shadow-sm p-5 hover:shadow-md transition">
             <div className="flex items-start justify-between mb-3">

@@ -18,6 +18,24 @@ const StudentLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // ============ TEMPORARY: AUTHENTICATION DISABLED FOR CLIENT DEMO ============
+    // TODO: UNCOMMENT BELOW CODE TO RE-ENABLE AUTHENTICATION
+    
+    // Direct login without authentication for demo
+    localStorage.setItem('student_auth', JSON.stringify({
+      isAuthenticated: true,
+      student: {
+        id: 'demo-student',
+        name: 'Demo Student',
+        email: 'demo@student.com',
+        enrolledCourses: ['Full Stack Development'],
+        dueAmount: 0
+      }
+    }));
+    navigate('/student');
+    
+    /* ============ ORIGINAL AUTHENTICATION CODE (COMMENTED FOR DEMO) ============
     setError('');
 
     if (!formData.email || !formData.password) {
@@ -42,6 +60,7 @@ const StudentLogin = () => {
     } catch (error) {
       setError(error.response?.data?.message || 'Invalid credentials or account not approved yet.');
     }
+    ============================================================================ */
   };
 
   return (

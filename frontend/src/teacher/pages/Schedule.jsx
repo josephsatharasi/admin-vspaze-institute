@@ -15,6 +15,15 @@ const Schedule = () => {
       setSchedule(response.data.schedule || []);
     } catch (error) {
       console.error('Error fetching schedule:', error);
+      // ============ TEMPORARY: DEMO DATA FOR CLIENT DEMO ============
+      setSchedule([
+        { day: 'Monday', course: 'Full Stack Development', time: '10:00 AM - 12:00 PM' },
+        { day: 'Monday', course: 'React Advanced', time: '2:00 PM - 4:00 PM' },
+        { day: 'Wednesday', course: 'Node.js & Express', time: '10:00 AM - 12:00 PM' },
+        { day: 'Wednesday', course: 'Full Stack Development', time: '3:00 PM - 5:00 PM' },
+        { day: 'Friday', course: 'React Advanced', time: '11:00 AM - 1:00 PM' },
+        { day: 'Friday', course: 'Node.js & Express', time: '2:00 PM - 4:00 PM' }
+      ]);
     }
   };
 

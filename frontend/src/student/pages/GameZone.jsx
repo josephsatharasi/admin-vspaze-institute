@@ -95,7 +95,7 @@ const GameZone = ({ onMenuClick, onGameSelect }) => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 py-6 space-y-6">
         {/* Stats Card */}
         <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-3xl p-6 text-white shadow-lg">
           <div className="grid grid-cols-4 gap-4">

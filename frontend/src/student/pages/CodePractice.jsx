@@ -145,7 +145,7 @@ const CodePractice = ({ onMenuClick }) => {
       </div>
 
       {/* Code/Output Area */}
-      <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 py-6">
         {activeTab === 'code' ? (
           <div className="bg-gray-800 rounded-lg overflow-hidden">
             <textarea
@@ -172,7 +172,7 @@ const CodePractice = ({ onMenuClick }) => {
       </div>
 
       {/* Action Buttons */}
-      <div className="fixed bottom-16 md:bottom-6 left-0 right-0 bg-gray-800 border-t border-gray-700 px-4 py-4">
+      <div className="fixed bottom-16 md:bottom-6 left-0 right-0 bg-gray-800 border-t border-gray-700 px-6 sm:px-8 py-4">
         <div className="max-w-7xl mx-auto flex space-x-3">
           <button
             onClick={handleResetCode}

@@ -16,6 +16,14 @@ const Students = () => {
       setStudents(response.data.students || []);
     } catch (error) {
       console.error('Error fetching students:', error);
+      // ============ TEMPORARY: DEMO DATA FOR CLIENT DEMO ============
+      setStudents([
+        { _id: '1', name: 'Rahul Sharma', email: 'rahul@example.com', enrolledCourses: [{ name: 'Full Stack Development' }], status: 'active' },
+        { _id: '2', name: 'Priya Patel', email: 'priya@example.com', enrolledCourses: [{ name: 'React Advanced' }], status: 'active' },
+        { _id: '3', name: 'Amit Kumar', email: 'amit@example.com', enrolledCourses: [{ name: 'Node.js & Express' }], status: 'active' },
+        { _id: '4', name: 'Sneha Reddy', email: 'sneha@example.com', enrolledCourses: [{ name: 'Full Stack Development' }], status: 'active' },
+        { _id: '5', name: 'Vikram Singh', email: 'vikram@example.com', enrolledCourses: [{ name: 'React Advanced' }], status: 'active' }
+      ]);
     }
   };
 

@@ -57,7 +57,7 @@ function StudentApp() {
 
   const renderContent = () => {
     switch(activeSection) {
-      case 'home': return <Home onMenuClick={() => setSidebarOpen(true)} />;
+      case 'home': return <Home onMenuClick={() => setSidebarOpen(true)} onNavigateToCourses={() => setActiveSection('courses')} />;
       case 'activities': return <GameZone onMenuClick={() => setSidebarOpen(true)} onGameSelect={(game) => {
         if (game.id === 'quick-quiz') setActiveSection('assignments');
         else if (game.id === 'code-challenge') setActiveSection('tests');

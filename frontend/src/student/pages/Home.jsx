@@ -3,7 +3,7 @@ import { Play, Search, Bell, BookOpen, Video, HelpCircle, MessageCircle, Trendin
 import Notifications from './Notifications';
 import api from '../../utils/api';
 
-const Home = ({ onNavigate, onMenuClick }) => {
+const Home = ({ onNavigate, onMenuClick, onNavigateToCourses }) => {
   const [studentData, setStudentData] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -78,7 +78,10 @@ const Home = ({ onNavigate, onMenuClick }) => {
             <p className="text-sm text-gray-600 mb-3">Module 3: State Management</p>
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-700">45% Complete</span>
-              <button className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-600 transition">
+              <button 
+                onClick={onNavigateToCourses}
+                className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-600 transition"
+              >
                 <Play className="w-5 h-5 text-white fill-white" />
               </button>
             </div>

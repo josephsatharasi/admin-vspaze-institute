@@ -15,6 +15,12 @@ const MyCourses = () => {
       setCourses(response.data.courses || []);
     } catch (error) {
       console.error('Error fetching courses:', error);
+      // ============ TEMPORARY: DEMO DATA FOR CLIENT DEMO ============
+      setCourses([
+        { _id: '1', name: 'Full Stack Development', description: 'Complete web development course covering frontend and backend', duration: '6 months', enrolledStudents: 45 },
+        { _id: '2', name: 'React Advanced', description: 'Advanced React concepts and patterns', duration: '3 months', enrolledStudents: 32 },
+        { _id: '3', name: 'Node.js & Express', description: 'Backend development with Node.js', duration: '4 months', enrolledStudents: 28 }
+      ]);
     }
   };
 

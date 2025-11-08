@@ -43,7 +43,7 @@ const ProfileNew = ({ onMenuClick }) => {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 py-6">
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <p className="text-gray-600 text-center">Content for {selectedSection} will be displayed here</p>
           </div>
@@ -71,7 +71,7 @@ const ProfileNew = ({ onMenuClick }) => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 py-6 space-y-6">
         {/* Profile Info */}
         <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
           <div className="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">

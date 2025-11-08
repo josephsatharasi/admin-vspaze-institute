@@ -181,11 +181,31 @@ const Home = () => {
                 </button>
               </div>
               <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
-                <Link to="/student-login" className="text-cyan-300 hover:text-cyan-100 font-semibold text-sm sm:text-base transition-colors">
+                <Link 
+                  to="/student" 
+                  onClick={(e) => {
+                    // ============ TEMPORARY: DIRECT LOGIN FOR CLIENT DEMO ============
+                    localStorage.setItem('student_auth', JSON.stringify({
+                      isAuthenticated: true,
+                      student: { id: 'demo-student', name: 'Demo Student', email: 'demo@student.com', enrolledCourses: ['Full Stack Development'], dueAmount: 0 }
+                    }));
+                  }}
+                  className="text-cyan-300 hover:text-cyan-100 font-semibold text-sm sm:text-base transition-colors"
+                >
                   Already a Student? Login →
                 </Link>
                 <span className="hidden sm:inline text-cyan-400">|</span>
-                <Link to="/teacher-login" className="text-green-300 hover:text-green-100 font-semibold text-sm sm:text-base transition-colors">
+                <Link 
+                  to="/teacher" 
+                  onClick={(e) => {
+                    // ============ TEMPORARY: DIRECT LOGIN FOR CLIENT DEMO ============
+                    localStorage.setItem('teacher_auth', JSON.stringify({
+                      isAuthenticated: true,
+                      teacher: { id: 'demo-teacher', name: 'Demo Teacher', email: 'demo@teacher.com', assignedCourses: ['Full Stack Development'] }
+                    }));
+                  }}
+                  className="text-green-300 hover:text-green-100 font-semibold text-sm sm:text-base transition-colors"
+                >
                   Teacher Login →
                 </Link>
               </div>

@@ -111,7 +111,7 @@ const Tests = () => {
 
   if (!isPaid) {
     return (
-      <div className="max-w-4xl mx-auto text-center py-12">
+      <div className="max-w-4xl mx-auto p-6 sm:p-8 text-center py-12">
         <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
           <FileCheck className="w-16 h-16 mx-auto mb-4 text-gray-400" />
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Tests & Quizzes Locked</h3>
@@ -127,8 +127,8 @@ const Tests = () => {
     : 0;
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Tests & Quizzes</h2>
+    <div className="max-w-7xl mx-auto p-6 sm:p-8">
+      <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">Tests & Quizzes</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">

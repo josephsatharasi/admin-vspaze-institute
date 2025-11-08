@@ -27,20 +27,20 @@ const StudentSidebar = ({ isOpen, onClose, activeSection, setActiveSection }) =>
         <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" onClick={onClose} />
       )}
       
-      <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-        <div className="flex items-center justify-between p-6 border-b">
+      <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">S</span>
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-md">
+              <span className="text-white font-bold text-xl">S</span>
             </div>
             <span className="text-xl font-bold text-gray-900">Student</span>
           </div>
-          <button onClick={onClose} className="lg:hidden">
+          <button onClick={onClose} className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <X className="w-6 h-6 text-gray-600" />
           </button>
         </div>
 
-        <nav className="p-4 space-y-2">
+        <nav className="p-5 space-y-2 overflow-y-auto" style={{maxHeight: 'calc(100vh - 88px)'}}>
           {menuItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -50,33 +50,33 @@ const StudentSidebar = ({ isOpen, onClose, activeSection, setActiveSection }) =>
                   setActiveSection(item.id);
                   onClose();
                 }}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                className={`w-full flex items-center space-x-4 px-5 py-3.5 rounded-xl transition-all duration-200 ${
                   activeSection === item.id
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md transform scale-[1.02]'
+                    : 'text-gray-700 hover:bg-gray-100 hover:translate-x-1'
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
+                <Icon className="w-5 h-5 flex-shrink-0" />
+                <span className="font-medium text-sm">{item.label}</span>
               </button>
             );
           })}
 
           {/* Activities Dropdown */}
-          <div>
+          <div className="mt-2">
             <button
               onClick={() => setActivitiesOpen(!activitiesOpen)}
-              className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+              className="w-full flex items-center justify-between px-5 py-3.5 rounded-xl text-gray-700 hover:bg-gray-100 transition-all duration-200 hover:translate-x-1"
             >
-              <div className="flex items-center space-x-3">
-                <FileCheck className="w-5 h-5" />
-                <span className="font-medium">Activities</span>
+              <div className="flex items-center space-x-4">
+                <FileCheck className="w-5 h-5 flex-shrink-0" />
+                <span className="font-medium text-sm">Activities</span>
               </div>
               {activitiesOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
             
             {activitiesOpen && (
-              <div className="ml-4 mt-2 space-y-1">
+              <div className="ml-6 mt-2 space-y-1 border-l-2 border-gray-200 pl-3">
                 {activityItems.map((item) => {
                   const Icon = item.icon;
                   return (
@@ -86,13 +86,13 @@ const StudentSidebar = ({ isOpen, onClose, activeSection, setActiveSection }) =>
                         setActiveSection(item.id);
                         onClose();
                       }}
-                      className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${
+                      className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-all duration-200 ${
                         activeSection === item.id
-                          ? 'bg-blue-600 text-white'
-                          : 'text-gray-600 hover:bg-gray-100'
+                          ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md'
+                          : 'text-gray-600 hover:bg-gray-100 hover:translate-x-1'
                       }`}
                     >
-                      <Icon className="w-4 h-4" />
+                      <Icon className="w-4 h-4 flex-shrink-0" />
                       <span className="text-sm font-medium">{item.label}</span>
                     </button>
                   );

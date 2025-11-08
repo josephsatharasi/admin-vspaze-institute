@@ -102,7 +102,7 @@ const Notifications = ({ onBack }) => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 py-6">
         {unreadCount > 0 && (
           <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4">
             <p className="text-sm text-indigo-700">

@@ -18,6 +18,23 @@ const TeacherLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // ============ TEMPORARY: AUTHENTICATION DISABLED FOR CLIENT DEMO ============
+    // TODO: UNCOMMENT BELOW CODE TO RE-ENABLE AUTHENTICATION
+    
+    // Direct login without authentication for demo
+    localStorage.setItem('teacher_auth', JSON.stringify({
+      isAuthenticated: true,
+      teacher: {
+        id: 'demo-teacher',
+        name: 'Demo Teacher',
+        email: 'demo@teacher.com',
+        assignedCourses: ['Full Stack Development']
+      }
+    }));
+    navigate('/teacher');
+    
+    /* ============ ORIGINAL AUTHENTICATION CODE (COMMENTED FOR DEMO) ============
     setError('');
 
     if (!formData.email || !formData.password) {
@@ -42,6 +59,7 @@ const TeacherLogin = () => {
     } catch (error) {
       setError(error.response?.data?.message || 'Invalid credentials or account not approved yet.');
     }
+    ============================================================================ */
   };
 
   return (
