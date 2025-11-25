@@ -44,6 +44,10 @@ const StudentLogin = () => {
         return;
       }
     } catch (error) {
+      if (error.response?.status === 403) {
+        setError(error.response.data.message || 'Account not active. Contact admin.');
+        return;
+      }
       console.log('API login failed, checking demo credentials');
     }
 

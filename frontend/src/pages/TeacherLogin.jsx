@@ -44,6 +44,10 @@ const TeacherLogin = () => {
         return;
       }
     } catch (error) {
+      if (error.response?.status === 403) {
+        setError(error.response.data.message || 'Account pending approval. Contact admin.');
+        return;
+      }
       console.log('API login failed, checking demo credentials');
     }
 
@@ -62,7 +66,7 @@ const TeacherLogin = () => {
       }));
       navigate('/teacher');
     } else {
-      setError('Invalid credentials. Use demo credentials below.');
+      setError('Invalid credentials or account not approved.');
     }
   };
 

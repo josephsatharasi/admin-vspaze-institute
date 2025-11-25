@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, X, Eye, Lock } from 'lucide-react';
 import { initializePendingFaculty } from '../utils/initializePendingFaculty';
+import api from '../../utils/api';
 
 const PendingFaculty = () => {
   const [pendingFaculty, setPendingFaculty] = useState([]);
@@ -26,7 +27,7 @@ const PendingFaculty = () => {
     setPassword('');
   };
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     if (!password.trim()) {
       alert('Please enter a password for the faculty');
       return;
@@ -37,6 +38,18 @@ const PendingFaculty = () => {
       return;
     }
 
+    try {
+      // Try to update in backend (if faculty has _id from database)
+      if (selectedFaculty._id) {
+        await api.put(`/admin/faculty/approve/${selectedFaculty._id}`, {
+          password
+        });
+      }
+    } catch (error) {
+      console.log('Backend update failed, updating localStorage only', error.message);
+    }
+
+    // Update localStorage
     const updatedPending = pendingFaculty.filter(f => f.id !== selectedFaculty.id);
     localStorage.setItem('pending_faculty', JSON.stringify(updatedPending));
 
