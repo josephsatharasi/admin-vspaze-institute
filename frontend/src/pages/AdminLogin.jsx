@@ -9,26 +9,13 @@ const AdminLogin = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  const DEMO_CREDENTIALS = {
+    email: 'admin@vspaze.com',
+    password: 'admin123'
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // ============ TEMPORARY: AUTHENTICATION DISABLED FOR CLIENT DEMO ============
-    // TODO: UNCOMMENT BELOW CODE TO RE-ENABLE AUTHENTICATION
-    
-    // Direct login without authentication for demo
-    localStorage.setItem('vspaze_auth', JSON.stringify({
-      isAuthenticated: true,
-      user: {
-        id: 'demo-admin',
-        name: 'Demo Admin',
-        email: 'admin@vspaze.com',
-        role: 'admin'
-      }
-    }));
-    navigate('/admin');
-    window.location.reload();
-    
-    /* ============ ORIGINAL AUTHENTICATION CODE (COMMENTED FOR DEMO) ============
     setError('');
 
     if (!formData.email || !formData.password) {
@@ -36,25 +23,21 @@ const AdminLogin = () => {
       return;
     }
 
-    try {
-      const response = await api.post('/auth/admin/login', {
-        email: formData.email,
-        password: formData.password
-      });
-
-      if (response.data.success) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('vspaze_auth', JSON.stringify({
-          isAuthenticated: true,
-          user: response.data.user
-        }));
-        navigate('/admin');
-        window.location.reload();
-      }
-    } catch (error) {
-      setError(error.response?.data?.message || 'Invalid credentials. Access denied.');
+    if (formData.email === DEMO_CREDENTIALS.email && formData.password === DEMO_CREDENTIALS.password) {
+      localStorage.setItem('vspaze_auth', JSON.stringify({
+        isAuthenticated: true,
+        user: {
+          id: 'demo-admin',
+          name: 'Demo Admin',
+          email: 'admin@vspaze.com',
+          role: 'admin'
+        }
+      }));
+      navigate('/admin');
+      window.location.reload();
+    } else {
+      setError('Invalid credentials. Access denied.');
     }
-    ============================================================================ */
   };
 
   return (

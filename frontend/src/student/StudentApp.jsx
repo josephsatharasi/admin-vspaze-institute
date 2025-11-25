@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../utils/api';
 import StudentHeader from './components/StudentHeader';
 import StudentSidebar from './components/StudentSidebar';
 import BottomNav from './components/BottomNav';
@@ -26,24 +25,28 @@ function StudentApp() {
   const [activeSection, setActiveSection] = useState('home');
   const [isPaid, setIsPaid] = useState(false);
   const navigate = useNavigate();
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     const auth = JSON.parse(localStorage.getItem('student_auth') || '{}');
     if (auth.isAuthenticated) {
       setIsAuthenticated(true);
-      fetchStudentData();
     } else {
       navigate('/student-login');
     }
+    setAuthChecked(true);
   }, [navigate]);
 
-  const fetchStudentData = async () => {
-    try {
-      const response = await api.get('/student/profile');
-      setIsPaid(response.data.student?.dueAmount === 0);
-    } catch (error) {
-      console.error('Error fetching student data:', error);
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchStudentData();
     }
+  }, [isAuthenticated]);
+
+  const fetchStudentData = () => {
+    // Use demo data from localStorage
+    const auth = JSON.parse(localStorage.getItem('student_auth') || '{}');
+    setIsPaid(auth.student?.dueAmount === 0 || true);
   };
 
   const handleLogout = () => {

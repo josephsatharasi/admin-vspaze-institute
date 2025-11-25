@@ -22,7 +22,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Only redirect on 401 if we have a response (backend is running)
+    // Don't redirect on network errors (backend not running)
+    if (error.response?.status === 401 && error.response?.data) {
       localStorage.removeItem('token');
       localStorage.removeItem('vspaze_auth');
       localStorage.removeItem('student_auth');

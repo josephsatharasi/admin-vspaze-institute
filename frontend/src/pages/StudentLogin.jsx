@@ -16,26 +16,13 @@ const StudentLogin = () => {
     }
   }, [navigate]);
 
+  const DEMO_CREDENTIALS = {
+    email: 'student@vspaze.com',
+    password: 'student123'
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // ============ TEMPORARY: AUTHENTICATION DISABLED FOR CLIENT DEMO ============
-    // TODO: UNCOMMENT BELOW CODE TO RE-ENABLE AUTHENTICATION
-    
-    // Direct login without authentication for demo
-    localStorage.setItem('student_auth', JSON.stringify({
-      isAuthenticated: true,
-      student: {
-        id: 'demo-student',
-        name: 'Demo Student',
-        email: 'demo@student.com',
-        enrolledCourses: ['Full Stack Development'],
-        dueAmount: 0
-      }
-    }));
-    navigate('/student');
-    
-    /* ============ ORIGINAL AUTHENTICATION CODE (COMMENTED FOR DEMO) ============
     setError('');
 
     if (!formData.email || !formData.password) {
@@ -43,24 +30,21 @@ const StudentLogin = () => {
       return;
     }
 
-    try {
-      const response = await api.post('/auth/student/login', {
-        email: formData.email,
-        password: formData.password
-      });
-
-      if (response.data.success) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('student_auth', JSON.stringify({
-          isAuthenticated: true,
-          student: response.data.user
-        }));
-        navigate('/student');
-      }
-    } catch (error) {
-      setError(error.response?.data?.message || 'Invalid credentials or account not approved yet.');
+    if (formData.email === DEMO_CREDENTIALS.email && formData.password === DEMO_CREDENTIALS.password) {
+      localStorage.setItem('student_auth', JSON.stringify({
+        isAuthenticated: true,
+        student: {
+          id: 'demo-student',
+          name: 'Demo Student',
+          email: 'student@vspaze.com',
+          enrolledCourses: ['Full Stack Development'],
+          dueAmount: 0
+        }
+      }));
+      navigate('/student');
+    } else {
+      setError('Invalid credentials. Use demo credentials below.');
     }
-    ============================================================================ */
   };
 
   return (
@@ -125,7 +109,13 @@ const StudentLogin = () => {
           </button>
         </form>
 
-        <p className="text-center text-gray-500 text-sm mt-6">
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+          <p className="text-sm text-gray-700 font-semibold mb-2">Demo Credentials:</p>
+          <p className="text-xs text-gray-600">Email: student@vspaze.com</p>
+          <p className="text-xs text-gray-600">Password: student123</p>
+        </div>
+
+        <p className="text-center text-gray-500 text-sm mt-4">
           Don't have an account? <a href="/student-registration" className="text-blue-600 hover:underline">Register here</a>
         </p>
       </div>

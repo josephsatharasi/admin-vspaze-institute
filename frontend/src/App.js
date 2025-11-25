@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './admin/components/Header';
 import Sidebar from './admin/components/Sidebar';
-import Footer from './components/Footer';
+
 import AdminProfile from './admin/pages/AdminProfile';
 import DashboardLanding from './admin/pages/DashboardLanding';
 import StudentManagement from './admin/pages/StudentManagement';
@@ -29,21 +29,17 @@ function App() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const auth = JSON.parse(localStorage.getItem('vspaze_auth') || '{}');
     if (auth.isAuthenticated) {
       setIsAuthenticated(true);
       setCurrentView('dashboard');
+    } else {
+      navigate('/admin-login');
     }
-  }, []);
-
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-    setCurrentView('dashboard');
-  };
-
-  const navigate = useNavigate();
+  }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem('vspaze_auth');
@@ -51,7 +47,6 @@ function App() {
   };
 
   if (!isAuthenticated) {
-    navigate('/admin-login');
     return null;
   }
 
@@ -117,7 +112,6 @@ function App() {
             <div className="flex-1">
               {renderContent()}
             </div>
-            <Footer />
           </div>
         </main>
       </div>

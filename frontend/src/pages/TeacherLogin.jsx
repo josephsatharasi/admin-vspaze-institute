@@ -16,25 +16,13 @@ const TeacherLogin = () => {
     }
   }, [navigate]);
 
+  const DEMO_CREDENTIALS = {
+    email: 'teacher@vspaze.com',
+    password: 'teacher123'
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // ============ TEMPORARY: AUTHENTICATION DISABLED FOR CLIENT DEMO ============
-    // TODO: UNCOMMENT BELOW CODE TO RE-ENABLE AUTHENTICATION
-    
-    // Direct login without authentication for demo
-    localStorage.setItem('teacher_auth', JSON.stringify({
-      isAuthenticated: true,
-      teacher: {
-        id: 'demo-teacher',
-        name: 'Demo Teacher',
-        email: 'demo@teacher.com',
-        assignedCourses: ['Full Stack Development']
-      }
-    }));
-    navigate('/teacher');
-    
-    /* ============ ORIGINAL AUTHENTICATION CODE (COMMENTED FOR DEMO) ============
     setError('');
 
     if (!formData.email || !formData.password) {
@@ -42,24 +30,20 @@ const TeacherLogin = () => {
       return;
     }
 
-    try {
-      const response = await api.post('/auth/faculty/login', {
-        email: formData.email,
-        password: formData.password
-      });
-
-      if (response.data.success) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('teacher_auth', JSON.stringify({
-          isAuthenticated: true,
-          teacher: response.data.user
-        }));
-        navigate('/teacher');
-      }
-    } catch (error) {
-      setError(error.response?.data?.message || 'Invalid credentials or account not approved yet.');
+    if (formData.email === DEMO_CREDENTIALS.email && formData.password === DEMO_CREDENTIALS.password) {
+      localStorage.setItem('teacher_auth', JSON.stringify({
+        isAuthenticated: true,
+        teacher: {
+          id: 'demo-teacher',
+          name: 'Demo Teacher',
+          email: 'teacher@vspaze.com',
+          assignedCourses: ['Full Stack Development']
+        }
+      }));
+      navigate('/teacher');
+    } else {
+      setError('Invalid credentials. Use demo credentials below.');
     }
-    ============================================================================ */
   };
 
   return (
@@ -125,7 +109,13 @@ const TeacherLogin = () => {
           </button>
         </form>
 
-        <p className="text-center text-gray-500 text-sm mt-6">
+        <div className="mt-6 p-4 bg-green-50 rounded-lg">
+          <p className="text-sm text-gray-700 font-semibold mb-2">Demo Credentials:</p>
+          <p className="text-xs text-gray-600">Email: teacher@vspaze.com</p>
+          <p className="text-xs text-gray-600">Password: teacher123</p>
+        </div>
+
+        <p className="text-center text-gray-500 text-sm mt-4">
           Don't have an account? <a href="/teacher-registration" className="text-green-600 hover:underline">Register here</a>
         </p>
       </div>

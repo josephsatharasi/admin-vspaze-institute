@@ -13,27 +13,32 @@ const TeacherApp = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [teacherData, setTeacherData] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    const auth = JSON.parse(localStorage.getItem('teacher_auth') || '{}');
+    if (!auth.isAuthenticated) {
+      window.location.href = '/teacher-login';
+      return;
+    }
+    setIsAuthenticated(true);
     fetchTeacherData();
   }, []);
 
-  const fetchTeacherData = async () => {
-    try {
-      const response = await api.get('/faculty/profile');
-      setTeacherData(response.data.faculty);
-    } catch (error) {
-      console.error('Error fetching teacher data:', error);
-      // ============ TEMPORARY: USE DEMO DATA FOR CLIENT DEMO ============
-      const auth = JSON.parse(localStorage.getItem('teacher_auth') || '{}');
-      setTeacherData(auth.teacher || { name: 'Demo Teacher', specialization: 'Full Stack Development' });
-    }
+  const fetchTeacherData = () => {
+    // Use demo data from localStorage
+    const auth = JSON.parse(localStorage.getItem('teacher_auth') || '{}');
+    setTeacherData(auth.teacher || { name: 'Demo Teacher', specialization: 'Full Stack Development' });
   };
 
   const handleLogout = () => {
     localStorage.removeItem('teacher_auth');
     window.location.href = '/';
   };
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
