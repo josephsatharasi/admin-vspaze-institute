@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, X, Eye, Lock } from 'lucide-react';
-import { initializePendingFaculty } from '../utils/initializePendingFaculty';
 import api from '../../utils/api';
 
 const PendingFaculty = () => {
@@ -8,23 +7,30 @@ const PendingFaculty = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
   const [password, setPassword] = useState('');
+  const [salary, setSalary] = useState('');
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [viewFaculty, setViewFaculty] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [approvedCredentials, setApprovedCredentials] = useState(null);
 
   useEffect(() => {
-    initializePendingFaculty();
     loadPendingFaculty();
   }, []);
 
-  const loadPendingFaculty = () => {
-    const pending = JSON.parse(localStorage.getItem('pending_faculty') || '[]');
-    setPendingFaculty(pending);
+  const loadPendingFaculty = async () => {
+    try {
+      const response = await api.get('/admin/faculty/pending');
+      setPendingFaculty(response.data.faculty || []);
+    } catch (error) {
+      console.error('Error loading pending faculty:', error);
+    }
   };
 
   const handleApproveClick = (faculty) => {
     setSelectedFaculty(faculty);
     setShowPasswordModal(true);
     setPassword('');
+    setSalary('30000');
   };
 
   const handleApprove = async () => {
@@ -38,44 +44,38 @@ const PendingFaculty = () => {
       return;
     }
 
-    try {
-      // Try to update in backend (if faculty has _id from database)
-      if (selectedFaculty._id) {
-        await api.put(`/admin/faculty/approve/${selectedFaculty._id}`, {
-          password
-        });
-      }
-    } catch (error) {
-      console.log('Backend update failed, updating localStorage only', error.message);
+    if (!salary || parseFloat(salary) <= 0) {
+      alert('Please enter a valid salary');
+      return;
     }
 
-    // Update localStorage
-    const updatedPending = pendingFaculty.filter(f => f.id !== selectedFaculty.id);
-    localStorage.setItem('pending_faculty', JSON.stringify(updatedPending));
+    try {
+      const response = await api.put(`/admin/faculty/approve/${selectedFaculty._id}`, {
+        password,
+        salary: parseFloat(salary),
+        assignedCourses: []
+      });
 
-    const faculty = JSON.parse(localStorage.getItem('approved_faculty') || '[]');
-    const newFaculty = {
-      ...selectedFaculty,
-      password,
-      status: 'Active',
-      assignedCourses: [],
-      students: 0,
-      joinDate: new Date().toISOString().split('T')[0]
-    };
-    faculty.push(newFaculty);
-    localStorage.setItem('approved_faculty', JSON.stringify(faculty));
-
-    setPendingFaculty(updatedPending);
-    setShowPasswordModal(false);
-    setSelectedFaculty(null);
-    alert(`${selectedFaculty.name} has been approved and added to the institute!`);
+      if (response.data.success) {
+        setPendingFaculty(pendingFaculty.filter(f => f._id !== selectedFaculty._id));
+        setShowPasswordModal(false);
+        setApprovedCredentials({ email: selectedFaculty.email, password });
+        setShowSuccessModal(true);
+        setSelectedFaculty(null);
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to approve faculty');
+    }
   };
 
-  const handleReject = (id) => {
+  const handleReject = async (id) => {
     if (window.confirm('Are you sure you want to reject this registration?')) {
-      const updated = pendingFaculty.filter(f => f.id !== id);
-      localStorage.setItem('pending_faculty', JSON.stringify(updated));
-      setPendingFaculty(updated);
+      try {
+        await api.delete(`/admin/faculty/${id}`);
+        setPendingFaculty(pendingFaculty.filter(f => f._id !== id));
+      } catch (error) {
+        alert('Failed to reject faculty');
+      }
     }
   };
 
@@ -104,7 +104,7 @@ const PendingFaculty = () => {
       ) : (
         <div className="grid gap-4">
           {pendingFaculty.map((faculty) => (
-            <div key={faculty.id} className="card hover:shadow-lg transition-shadow">
+            <div key={faculty._id} className="card hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4 flex-1">
                   <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
@@ -141,7 +141,7 @@ const PendingFaculty = () => {
                     <span>Approve</span>
                   </button>
                   <button
-                    onClick={() => handleReject(faculty.id)}
+                    onClick={() => handleReject(faculty._id)}
                     className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
                   >
                     <X className="w-5 h-5" />
@@ -179,6 +179,16 @@ const PendingFaculty = () => {
                     placeholder="Enter password (min 6 characters)"
                   />
                 </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Monthly Salary (₹)</label>
+                <input
+                  type="number"
+                  value={salary}
+                  onChange={(e) => setSalary(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                  placeholder="Enter monthly salary"
+                />
               </div>
               <div className="flex space-x-2">
                 <button
@@ -266,6 +276,46 @@ const PendingFaculty = () => {
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && approvedCredentials && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-md">
+            <div className="p-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-10 h-10 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 text-center mb-2">Faculty Approved!</h3>
+              <p className="text-gray-600 text-center mb-6">The faculty has been successfully approved. Share these credentials:</p>
+              
+              <div className="bg-green-50 rounded-lg p-4 mb-4">
+                <div className="mb-3">
+                  <p className="text-sm text-gray-600 mb-1">Email</p>
+                  <p className="font-semibold text-gray-900">{approvedCredentials.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Password</p>
+                  <p className="font-semibold text-gray-900">{approvedCredentials.password}</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-gray-600 text-center mb-4">
+                Faculty can login at: <span className="font-semibold text-green-600">/teacher-login</span>
+              </p>
+
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  setApprovedCredentials(null);
+                }}
+                className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-semibold"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
