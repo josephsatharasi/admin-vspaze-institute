@@ -24,6 +24,19 @@ const courseSchema = new mongoose.Schema({
     module: String,
     topics: [String]
   }],
+  videos: [{
+    title: String,
+    url: String,
+    module: String,
+    addedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Faculty'
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   status: {
     type: String,
     enum: ['active', 'inactive'],

@@ -8,6 +8,8 @@ const CourseContent = () => {
   const [expandedModules, setExpandedModules] = useState({});
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [courseData, setCourseData] = useState(null);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [courses, setCourses] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -17,18 +19,16 @@ const CourseContent = () => {
     try {
       const response = await api.get('/student/profile');
       const student = response.data.student;
-      console.log('Student data:', student);
       setStudentData(student);
       setIsPaid(student?.dueAmount === 0);
       
-      if (student?.enrolledCourses?.[0]) {
-        const courseId = student.enrolledCourses[0]._id || student.enrolledCourses[0];
-        console.log('Fetching course:', courseId);
-        const courseRes = await api.get(`/courses/${courseId}`);
-        console.log('Course data:', courseRes.data.course);
-        setCourseData(courseRes.data.course);
+      if (student?.enrolledCourses?.length > 0) {
+        setCourses(student.enrolledCourses);
+        const firstCourse = student.enrolledCourses[0];
+        const courseId = firstCourse._id || firstCourse;
+        setSelectedCourse(courseId);
+        await fetchCourseData(courseId);
       } else {
-        console.log('No enrolled courses found');
         setCourseData({ syllabus: [] });
       }
     } catch (error) {
@@ -37,17 +37,43 @@ const CourseContent = () => {
     }
   };
 
-  const courseModules = courseData?.syllabus?.map((module, index) => ({
+  const fetchCourseData = async (courseId) => {
+    try {
+      const courseRes = await api.get(`/courses/${courseId}`);
+      setCourseData(courseRes.data.course);
+      if (courseRes.data.course.videos?.length > 0 && !selectedVideo) {
+        setExpandedModules({ 1: true });
+      }
+    } catch (error) {
+      console.error('Error fetching course:', error);
+      setCourseData({ syllabus: [], videos: [] });
+    }
+  };
+
+  const handleCourseChange = async (courseId) => {
+    setSelectedCourse(courseId);
+    setSelectedVideo(null);
+    await fetchCourseData(courseId);
+  };
+
+  const videosByModule = {};
+  courseData?.videos?.forEach(video => {
+    if (!videosByModule[video.module]) {
+      videosByModule[video.module] = [];
+    }
+    videosByModule[video.module].push(video);
+  });
+
+  const courseModules = Object.keys(videosByModule).map((moduleName, index) => ({
     id: index + 1,
-    title: module.module,
-    duration: '2 hours',
-    topics: module.topics?.map((topic, topicIndex) => ({
-      id: `${index}-${topicIndex}`,
-      title: topic,
-      duration: '30 min',
+    title: moduleName,
+    topics: videosByModule[moduleName].map((video) => ({
+      id: video._id,
+      title: video.title,
+      url: video.url,
       completed: false
-    })) || []
-  })) || [];
+    }))
+  }));
 
   const toggleModule = (moduleId) => {
     setExpandedModules(prev => ({
@@ -114,26 +140,48 @@ const CourseContent = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6 sm:p-8">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      {/* Course Selector */}
+      {courses.length > 1 && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Select Course</label>
+          <select
+            value={selectedCourse}
+            onChange={(e) => handleCourseChange(e.target.value)}
+            className="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+          >
+            {courses.map((course) => (
+              <option key={course._id || course} value={course._id || course}>
+                {course.name || course}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {courseModules.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+          <p className="text-gray-600 mb-4">No course content available yet.</p>
+          <p className="text-sm text-gray-500">Course syllabus will be added soon by the instructor.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 order-1 lg:order-1">
           {selectedVideo ? (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="bg-black aspect-video flex items-center justify-center">
-                <div className="text-center text-white">
-                  <Play className="w-16 h-16 mx-auto mb-4" />
-                  <p className="text-lg">Video Player</p>
-                  <p className="text-sm text-gray-400">Playing: {selectedVideo.title}</p>
-                </div>
+              <div className="aspect-video">
+                <iframe
+                  src={selectedVideo.url.replace('watch?v=', 'embed/')}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={selectedVideo.title}
+                ></iframe>
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">{selectedVideo.title}</h3>
-                <p className="text-gray-600 mb-4">Duration: {selectedVideo.duration}</p>
                 <div className="flex space-x-2">
                   <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                     Mark as Complete
-                  </button>
-                  <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
-                    Download Resources
                   </button>
                 </div>
               </div>
@@ -189,7 +237,8 @@ const CourseContent = () => {
             </div>
           ))}
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

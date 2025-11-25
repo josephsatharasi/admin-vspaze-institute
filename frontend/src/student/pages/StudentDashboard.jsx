@@ -1,33 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Calendar, CheckCircle, Clock, TrendingUp, Award } from 'lucide-react';
+import { BookOpen, Calendar, CheckCircle, Clock, Award } from 'lucide-react';
 import api from '../../utils/api';
 
 const StudentDashboard = () => {
   const [studentData, setStudentData] = useState(null);
   const [isPaid, setIsPaid] = useState(false);
+  const [assignments, setAssignments] = useState([]);
+  const [tests, setTests] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStudentData();
+    fetchAllData();
   }, []);
 
-  const fetchStudentData = async () => {
+  const fetchAllData = async () => {
     try {
-      const response = await api.get('/student/profile');
-      const student = response.data.student;
+      const profileRes = await api.get('/student/profile');
+      const student = profileRes.data.student;
       setStudentData(student);
-      setIsPaid(student?.dueAmount === 0);
-    } catch (error) {
-      console.error('Error fetching student data:', error);
-      // Fallback to localStorage
-      const auth = JSON.parse(localStorage.getItem('student_auth') || '{}');
-      if (auth.student) {
-        setStudentData(auth.student);
-        setIsPaid(auth.student?.dueAmount === 0);
+      const paid = student?.dueAmount === 0;
+      setIsPaid(paid);
+
+      if (paid) {
+        const [assignmentsRes, testsRes] = await Promise.all([
+          api.get('/student/assignments'),
+          api.get('/student/tests')
+        ]);
+        setAssignments(assignmentsRes.data.assignments || []);
+        setTests(testsRes.data.tests || []);
       }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!studentData) {
+  if (loading || !studentData) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -39,10 +48,10 @@ const StudentDashboard = () => {
   }
 
   const stats = [
-    { title: 'Enrolled Courses', value: studentData.enrolledCourses?.length || 1, icon: BookOpen, color: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-50' },
-    { title: 'Attendance', value: isPaid ? '85%' : 'Locked', icon: Calendar, color: 'from-green-500 to-green-600', bgColor: 'bg-green-50' },
-    { title: 'Completed', value: isPaid ? '12' : 'Locked', icon: CheckCircle, color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-50' },
-    { title: 'Pending', value: isPaid ? '5' : 'Locked', icon: Clock, color: 'from-orange-500 to-orange-600', bgColor: 'bg-orange-50' }
+    { title: 'Enrolled Courses', value: studentData.enrolledCourses?.length || 0, icon: BookOpen, color: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-50' },
+    { title: 'Assignments', value: isPaid ? assignments.length : 'Locked', icon: CheckCircle, color: 'from-green-500 to-green-600', bgColor: 'bg-green-50' },
+    { title: 'Tests', value: isPaid ? tests.length : 'Locked', icon: Calendar, color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-50' },
+    { title: 'Pending', value: isPaid ? assignments.filter(a => !a.submitted).length : 'Locked', icon: Clock, color: 'from-orange-500 to-orange-600', bgColor: 'bg-orange-50' }
   ];
 
   return (
@@ -55,8 +64,7 @@ const StudentDashboard = () => {
               <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
                 Welcome back, <span className="text-blue-600">{studentData.name}</span>!
               </h1>
-              <p className="text-gray-600 text-base sm:text-lg flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-green-500" />
+              <p className="text-gray-600 text-base sm:text-lg">
                 Keep up the great work!
               </p>
             </div>
@@ -109,76 +117,83 @@ const StudentDashboard = () => {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-          {/* My Courses - Takes 2 columns on large screens */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-100">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+          {/* Assignments */}
+          <div className="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-100">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <BookOpen className="w-6 h-6 text-blue-600" />
-                My Courses
+                <CheckCircle className="w-6 h-6 text-green-600" />
+                Assignments
               </h3>
               <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                {studentData.enrolledCourses?.length || 0} Active
+                {isPaid ? assignments.length : '🔒'}
               </span>
             </div>
-            <div className="space-y-4">
-              {studentData.enrolledCourses?.map((course, index) => (
-                <div key={index} className="group p-4 sm:p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 hover:border-blue-300 transition-all hover:shadow-md">
-                  <div className="flex items-start justify-between mb-3">
-                    <h4 className="font-bold text-gray-900 text-base sm:text-lg group-hover:text-blue-600 transition-colors">{course.name || course}</h4>
-                    {isPaid && (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">Active</span>
-                    )}
+            {!isPaid ? (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-3">🔒</div>
+                <p className="text-gray-600">Complete payment to view assignments</p>
+              </div>
+            ) : assignments.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No assignments yet</p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {assignments.slice(0, 5).map((assignment, index) => (
+                  <div key={index} className="p-4 bg-gradient-to-br from-green-50 to-blue-50 rounded-xl border border-green-100 hover:shadow-md transition-all">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="font-bold text-gray-900 text-sm">{assignment.title}</h4>
+                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">New</span>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-2">{assignment.course?.name}</p>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>Due: {new Date(assignment.dueDate).toLocaleDateString()}</span>
+                      <span>{assignment.totalMarks} marks</span>
+                    </div>
                   </div>
-                  {isPaid ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm text-gray-700">
-                        <span className="font-medium">Progress</span>
-                        <span className="font-bold text-blue-600">65%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-500" style={{ width: '65%' }}></div>
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-gray-600 mt-2">
-                        <span>13/20 lessons completed</span>
-                        <span>7 lessons remaining</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 text-sm text-gray-600 bg-white/50 px-3 py-2 rounded-lg">
-                      <span className="text-lg">🔒</span>
-                      <span>Complete payment to start learning</span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Recent Activity - Takes 1 column */}
+          {/* Tests */}
           <div className="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-100">
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <Clock className="w-6 h-6 text-purple-600" />
-              Recent Activity
-            </h3>
-            <div className="space-y-5">
-              {[
-                { title: 'Assignment submitted', time: '2 hours ago', color: 'bg-green-500', icon: '✓' },
-                { title: 'Attended class', time: '1 day ago', color: 'bg-blue-500', icon: '📚' },
-                { title: 'Quiz completed', time: '3 days ago', color: 'bg-purple-500', icon: '🎯' },
-                { title: 'Course enrolled', time: '1 week ago', color: 'bg-orange-500', icon: '🎓' }
-              ].map((activity, index) => (
-                <div key={index} className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className={`flex-shrink-0 w-10 h-10 ${activity.color} rounded-full flex items-center justify-center text-white font-bold shadow-md`}>
-                    {activity.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{activity.title}</p>
-                    <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Calendar className="w-6 h-6 text-purple-600" />
+                Tests
+              </h3>
+              <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                {isPaid ? tests.length : '🔒'}
+              </span>
             </div>
+            {!isPaid ? (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-3">🔒</div>
+                <p className="text-gray-600">Complete payment to view tests</p>
+              </div>
+            ) : tests.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No tests yet</p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {tests.slice(0, 5).map((test, index) => (
+                  <div key={index} className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-100 hover:shadow-md transition-all">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="font-bold text-gray-900 text-sm">{test.title}</h4>
+                      <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">New</span>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-2">{test.course?.name}</p>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>Date: {new Date(test.date).toLocaleDateString()}</span>
+                      <span>{test.duration} min</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
