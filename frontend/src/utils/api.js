@@ -22,15 +22,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Only redirect on 401 if we have a response (backend is running)
-    // Don't redirect on network errors (backend not running)
-    if (error.response?.status === 401 && error.response?.data) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('vspaze_auth');
-      localStorage.removeItem('student_auth');
-      localStorage.removeItem('teacher_auth');
-      window.location.href = '/';
-    }
+    // Don't clear auth or redirect - let components handle errors gracefully
+    // This allows demo mode to work without backend
     return Promise.reject(error);
   }
 );
