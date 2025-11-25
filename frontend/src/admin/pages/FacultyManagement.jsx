@@ -1,22 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Search, X, Clock } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, X, Clock, BookOpen, Eye } from 'lucide-react';
 import { initializeDummyActivity } from '../utils/initializeDummyActivity';
+import api from '../../utils/api';
 
 const FacultyManagement = () => {
   const [faculty, setFaculty] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [showAssignCourseModal, setShowAssignCourseModal] = useState(false);
+  const [selectedCourseIds, setSelectedCourseIds] = useState([]);
 
   useEffect(() => {
     loadFaculty();
+    loadCourses();
   }, []);
 
-  const loadFaculty = () => {
-    const approved = JSON.parse(localStorage.getItem('approved_faculty') || '[]');
-    const defaultFaculty = [
-      { id: 1, name: 'Dr. Sarah Johnson', email: 'sarah.j@vspaze.com', phone: '1234567890', specialization: 'Data Science', courses: 3, status: 'Active', assignedCourses: ['Data Science & AI', 'Python', 'Machine Learning'], students: 145, experience: '10 years', qualification: 'PhD in Computer Science', joinDate: '2020-01-15', salary: 85000 },
-      { id: 2, name: 'Prof. Michael Chen', email: 'michael.c@vspaze.com', phone: '0987654321', specialization: 'Web Development', courses: 2, status: 'Active', assignedCourses: ['Full Stack Development', 'React Advanced'], students: 98, experience: '8 years', qualification: 'Masters in Software Engineering', joinDate: '2021-03-20', salary: 75000 },
-      { id: 3, name: 'Dr. Emily Davis', email: 'emily.d@vspaze.com', phone: '5551234567', specialization: 'Cloud Computing', courses: 4, status: 'Active', assignedCourses: ['AWS', 'Azure', 'DevOps', 'Docker'], students: 187, experience: '12 years', qualification: 'PhD in Cloud Architecture', joinDate: '2019-08-10', salary: 95000 }
-    ];
-    setFaculty([...defaultFaculty, ...approved]);
+  const loadFaculty = async () => {
+    try {
+      const response = await api.get('/admin/faculty');
+      setFaculty(response.data.faculty || []);
+    } catch (error) {
+      console.error('Error loading faculty:', error);
+    }
+  };
+
+  const loadCourses = async () => {
+    try {
+      const response = await api.get('/courses');
+      setCourses(response.data.courses || []);
+    } catch (error) {
+      console.error('Error loading courses:', error);
+    }
   };
   const [showModal, setShowModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -59,13 +72,42 @@ const FacultyManagement = () => {
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this faculty member?')) {
-      const updatedFaculty = faculty.filter(f => f.id !== id);
-      setFaculty(updatedFaculty);
-      const approved = updatedFaculty.filter(f => f.id > 3);
-      localStorage.setItem('approved_faculty', JSON.stringify(approved));
+      try {
+        await api.delete(`/admin/faculty/${id}`);
+        setFaculty(faculty.filter(f => f._id !== id));
+      } catch (error) {
+        alert('Failed to delete faculty');
+      }
     }
+  };
+
+  const handleRowClick = (member) => {
+    setSelectedFaculty(member);
+    setSelectedCourseIds(member.assignedCourses?.map(c => c._id || c) || []);
+    setShowDetailModal(true);
+  };
+
+  const handleSaveCourses = async () => {
+    try {
+      await api.put(`/admin/faculty/${selectedFaculty._id}`, {
+        assignedCourses: selectedCourseIds
+      });
+      await loadFaculty();
+      setShowAssignCourseModal(false);
+      alert('Courses assigned successfully!');
+    } catch (error) {
+      alert('Failed to assign courses');
+    }
+  };
+
+  const toggleCourse = (courseId) => {
+    setSelectedCourseIds(prev => 
+      prev.includes(courseId) 
+        ? prev.filter(id => id !== courseId)
+        : [...prev, courseId]
+    );
   };
 
   const handleSubmit = (e) => {
@@ -126,12 +168,12 @@ const FacultyManagement = () => {
           </thead>
           <tbody>
             {filteredFaculty.map((member) => (
-              <tr key={member.id} className="border-b border-gray-100 hover:bg-green-50 cursor-pointer" onClick={() => { setSelectedFaculty(member); setShowDetailModal(true); }}>
+              <tr key={member._id} className="border-b border-gray-100 hover:bg-green-50 cursor-pointer" onClick={() => handleRowClick(member)}>
                 <td className="py-3 px-4">{member.name}</td>
                 <td className="py-3 px-4">{member.email}</td>
                 <td className="py-3 px-4">{member.phone}</td>
                 <td className="py-3 px-4">{member.specialization}</td>
-                <td className="py-3 px-4">{member.courses}</td>
+                <td className="py-3 px-4">{member.assignedCourses?.length || 0}</td>
                 <td className="py-3 px-4">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     member.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
@@ -142,7 +184,7 @@ const FacultyManagement = () => {
                 <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => {
-                      setSelectedActivity({ faculty: member, activities: getFacultyActivity(member.id) });
+                      setSelectedActivity({ faculty: member, activities: getFacultyActivity(member._id) });
                       setShowActivityModal(true);
                     }}
                     className="flex items-center space-x-1 text-green-600 hover:bg-green-100 px-2 py-1 rounded"
@@ -153,10 +195,10 @@ const FacultyManagement = () => {
                 </td>
                 <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center space-x-2">
-                    <button onClick={() => handleEdit(member)} className="p-1 text-blue-600 hover:bg-blue-100 rounded">
-                      <Edit className="w-4 h-4" />
+                    <button onClick={() => { setSelectedFaculty(member); setShowDetailModal(true); }} className="p-1 text-blue-600 hover:bg-blue-100 rounded">
+                      <Eye className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(member.id)} className="p-1 text-red-600 hover:bg-red-100 rounded">
+                    <button onClick={() => handleDelete(member._id)} className="p-1 text-red-600 hover:bg-red-100 rounded">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -225,17 +267,42 @@ const FacultyManagement = () => {
 
               <div className="card">
                 <h5 className="font-semibold text-gray-900 mb-3">Assigned Courses</h5>
-                <div className="flex flex-wrap gap-2">
-                  {selectedFaculty.assignedCourses?.map((course, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">{course?.name || course}</span>
+                <div className="space-y-2 mb-4 max-h-60 overflow-y-auto">
+                  {courses.map((course) => (
+                    <label key={course._id} className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedCourseIds.includes(course._id)}
+                        onChange={() => toggleCourse(course._id)}
+                        className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                      />
+                      <div className="ml-3 flex-1">
+                        <p className="font-semibold text-gray-900">{course.name}</p>
+                        <p className="text-sm text-gray-600">{course.duration} • {course.level}</p>
+                      </div>
+                    </label>
                   ))}
                 </div>
+                <button
+                  onClick={handleSaveCourses}
+                  className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-semibold"
+                >
+                  Save Course Changes
+                </button>
               </div>
 
               <div className="card bg-gradient-to-br from-green-50 to-blue-50">
                 <h5 className="font-semibold text-gray-900 mb-2">Salary</h5>
                 <p className="text-2xl font-bold text-gray-900">₹{(selectedFaculty.salary || 0).toLocaleString()}/month</p>
               </div>
+            </div>
+            <div className="p-6 border-t bg-gray-50">
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="w-full bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 font-semibold"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
