@@ -158,10 +158,14 @@ const CourseContent = () => {
         </div>
       )}
 
-      {courseModules.length === 0 ? (
+      {courseModules.length === 0 && (!courseData?.videos || courseData.videos.length === 0) ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
           <p className="text-gray-600 mb-4">No course content available yet.</p>
-          <p className="text-sm text-gray-500">Course syllabus will be added soon by the instructor.</p>
+          <p className="text-sm text-gray-500">Videos will be added soon by the instructor.</p>
+        </div>
+      ) : courseModules.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+          <p className="text-gray-600 mb-4">Loading videos...</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
