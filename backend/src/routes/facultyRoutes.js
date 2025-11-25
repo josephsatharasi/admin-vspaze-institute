@@ -13,11 +13,18 @@ router.get('/dashboard', protect(['faculty']), async (req, res) => {
     const assignments = await Assignment.countDocuments({ faculty: req.user.id });
     const tests = await Test.countDocuments({ faculty: req.user.id });
     
+    // Count students enrolled in faculty's assigned courses
+    const courseIds = faculty.assignedCourses?.map(c => c._id) || [];
+    const studentCount = await Student.countDocuments({
+      enrolledCourses: { $in: courseIds },
+      status: 'active'
+    });
+    
     res.json({
       success: true,
       stats: {
         courses: faculty.assignedCourses?.length || 0,
-        students: 0,
+        students: studentCount,
         assignments,
         tests
       },
@@ -130,10 +137,15 @@ router.delete('/tests/:id', protect(['faculty']), async (req, res) => {
   }
 });
 
-// Students
+// Students - Only students enrolled in faculty's courses
 router.get('/students', protect(['faculty']), async (req, res) => {
   try {
-    const students = await Student.find({ status: 'active' }).select('-password');
+    const faculty = await Faculty.findById(req.user.id);
+    const courseIds = faculty.assignedCourses || [];
+    const students = await Student.find({
+      enrolledCourses: { $in: courseIds },
+      status: 'active'
+    }).select('-password').populate('enrolledCourses', 'name');
     res.json({ success: true, students });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

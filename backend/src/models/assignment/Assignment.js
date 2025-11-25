@@ -11,6 +11,11 @@ const assignmentSchema = new mongoose.Schema({
     ref: 'Course',
     required: true
   },
+  faculty: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Faculty',
+    required: true
+  },
   batch: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Batch'
@@ -23,6 +28,10 @@ const assignmentSchema = new mongoose.Schema({
     type: Number,
     default: 100
   },
+  questions: [{
+    question: String,
+    marks: Number
+  }],
   attachments: [String],
   submissions: [{
     student: {

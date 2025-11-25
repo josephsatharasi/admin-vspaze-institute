@@ -5,6 +5,7 @@ const testSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  description: String,
   type: {
     type: String,
     enum: ['quiz', 'test'],
@@ -13,6 +14,15 @@ const testSchema = new mongoose.Schema({
   course: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Course',
+    required: true
+  },
+  faculty: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Faculty',
+    required: true
+  },
+  date: {
+    type: Date,
     required: true
   },
   duration: {
@@ -25,8 +35,13 @@ const testSchema = new mongoose.Schema({
   },
   questions: [{
     question: String,
+    type: {
+      type: String,
+      enum: ['single', 'multi'],
+      default: 'single'
+    },
     options: [String],
-    correctAnswer: Number,
+    correctAnswer: [Number],
     marks: Number
   }],
   attempts: [{
