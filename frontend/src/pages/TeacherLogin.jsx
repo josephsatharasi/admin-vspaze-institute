@@ -30,19 +30,20 @@ const TeacherLogin = () => {
       return;
     }
 
-    if (formData.email === DEMO_CREDENTIALS.email && formData.password === DEMO_CREDENTIALS.password) {
-      localStorage.setItem('teacher_auth', JSON.stringify({
-        isAuthenticated: true,
-        teacher: {
-          id: 'demo-teacher',
-          name: 'Demo Teacher',
-          email: 'teacher@vspaze.com',
-          assignedCourses: ['Full Stack Development']
-        }
-      }));
-      navigate('/teacher');
-    } else {
-      setError('Invalid credentials. Use demo credentials below.');
+    try {
+      const response = await api.post('/auth/faculty/login', formData);
+      
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('teacher_auth', JSON.stringify({
+          isAuthenticated: true,
+          teacher: response.data.faculty
+        }));
+        navigate('/teacher');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error.response?.data?.message || 'Invalid credentials');
     }
   };
 

@@ -30,20 +30,20 @@ const StudentLogin = () => {
       return;
     }
 
-    if (formData.email === DEMO_CREDENTIALS.email && formData.password === DEMO_CREDENTIALS.password) {
-      localStorage.setItem('student_auth', JSON.stringify({
-        isAuthenticated: true,
-        student: {
-          id: 'demo-student',
-          name: 'Demo Student',
-          email: 'student@vspaze.com',
-          enrolledCourses: ['Full Stack Development'],
-          dueAmount: 0
-        }
-      }));
-      navigate('/student');
-    } else {
-      setError('Invalid credentials. Use demo credentials below.');
+    try {
+      const response = await api.post('/auth/student/login', formData);
+      
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('student_auth', JSON.stringify({
+          isAuthenticated: true,
+          student: response.data.student
+        }));
+        navigate('/student');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error.response?.data?.message || 'Invalid credentials');
     }
   };
 

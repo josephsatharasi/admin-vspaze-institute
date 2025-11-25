@@ -23,20 +23,21 @@ const AdminLogin = () => {
       return;
     }
 
-    if (formData.email === DEMO_CREDENTIALS.email && formData.password === DEMO_CREDENTIALS.password) {
-      localStorage.setItem('vspaze_auth', JSON.stringify({
-        isAuthenticated: true,
-        user: {
-          id: 'demo-admin',
-          name: 'Demo Admin',
-          email: 'admin@vspaze.com',
-          role: 'admin'
-        }
-      }));
-      navigate('/admin');
-      window.location.reload();
-    } else {
-      setError('Invalid credentials. Access denied.');
+    try {
+      const response = await api.post('/auth/admin/login', formData);
+      
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('vspaze_auth', JSON.stringify({
+          isAuthenticated: true,
+          user: response.data.admin
+        }));
+        navigate('/admin');
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error.response?.data?.message || 'Invalid credentials');
     }
   };
 
