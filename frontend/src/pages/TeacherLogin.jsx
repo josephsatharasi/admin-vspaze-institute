@@ -30,6 +30,7 @@ const TeacherLogin = () => {
       return;
     }
 
+    // Try API login first
     try {
       const response = await api.post('/auth/faculty/login', formData);
       
@@ -37,13 +38,31 @@ const TeacherLogin = () => {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('teacher_auth', JSON.stringify({
           isAuthenticated: true,
-          teacher: response.data.faculty
+          teacher: response.data.user
         }));
         navigate('/teacher');
+        return;
       }
     } catch (error) {
-      console.error('Login error:', error);
-      setError(error.response?.data?.message || 'Invalid credentials');
+      console.log('API login failed, checking demo credentials');
+    }
+
+    // Fallback to demo mode
+    if (formData.email === DEMO_CREDENTIALS.email && formData.password === DEMO_CREDENTIALS.password) {
+      const demoToken = 'demo_teacher_token_' + btoa('teacher@vspaze.com');
+      localStorage.setItem('token', demoToken);
+      localStorage.setItem('teacher_auth', JSON.stringify({
+        isAuthenticated: true,
+        teacher: {
+          id: 'demo-teacher',
+          name: 'Demo Teacher',
+          email: 'teacher@vspaze.com',
+          assignedCourses: ['Full Stack Development']
+        }
+      }));
+      navigate('/teacher');
+    } else {
+      setError('Invalid credentials. Use demo credentials below.');
     }
   };
 

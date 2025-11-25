@@ -30,6 +30,7 @@ const StudentLogin = () => {
       return;
     }
 
+    // Try API login first
     try {
       const response = await api.post('/auth/student/login', formData);
       
@@ -37,13 +38,32 @@ const StudentLogin = () => {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('student_auth', JSON.stringify({
           isAuthenticated: true,
-          student: response.data.student
+          student: response.data.user
         }));
         navigate('/student');
+        return;
       }
     } catch (error) {
-      console.error('Login error:', error);
-      setError(error.response?.data?.message || 'Invalid credentials');
+      console.log('API login failed, checking demo credentials');
+    }
+
+    // Fallback to demo mode
+    if (formData.email === DEMO_CREDENTIALS.email && formData.password === DEMO_CREDENTIALS.password) {
+      const demoToken = 'demo_student_token_' + btoa('student@vspaze.com');
+      localStorage.setItem('token', demoToken);
+      localStorage.setItem('student_auth', JSON.stringify({
+        isAuthenticated: true,
+        student: {
+          id: 'demo-student',
+          name: 'Demo Student',
+          email: 'student@vspaze.com',
+          enrolledCourses: ['Full Stack Development'],
+          dueAmount: 0
+        }
+      }));
+      navigate('/student');
+    } else {
+      setError('Invalid credentials. Use demo credentials below.');
     }
   };
 

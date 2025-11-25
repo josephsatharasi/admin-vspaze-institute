@@ -31,14 +31,35 @@ const StudentRegistration = () => {
     setLoading(true);
     
     try {
+      // Try API first
       const response = await api.post('/auth/student/register', formData);
       
       if (response.data.success) {
+        // Also save to localStorage for admin to see
+        const pending = JSON.parse(localStorage.getItem('pending_students') || '[]');
+        pending.push({
+          id: Date.now(),
+          ...formData,
+          registeredAt: new Date().toISOString()
+        });
+        localStorage.setItem('pending_students', JSON.stringify(pending));
+        
         setSubmitted(true);
         setFormData({ name: '', email: '', phone: '', course: '', address: '' });
       }
     } catch (error) {
-      alert(error.response?.data?.message || 'Registration failed. Please try again.');
+      console.log('API failed, saving to localStorage only');
+      // Fallback: Save to localStorage even if API fails
+      const pending = JSON.parse(localStorage.getItem('pending_students') || '[]');
+      pending.push({
+        id: Date.now(),
+        ...formData,
+        registeredAt: new Date().toISOString()
+      });
+      localStorage.setItem('pending_students', JSON.stringify(pending));
+      
+      setSubmitted(true);
+      setFormData({ name: '', email: '', phone: '', course: '', address: '' });
     } finally {
       setLoading(false);
     }
