@@ -46,6 +46,9 @@ exports.getMyCourses = async (req, res) => {
 exports.getMyAssignments = async (req, res) => {
   try {
     const student = await Student.findById(req.user._id);
+    if (student.dueAmount > 0) {
+      return res.status(403).json({ success: false, message: 'Please complete payment to access assignments' });
+    }
     const assignments = await Assignment.find({
       course: { $in: student.enrolledCourses }
     }).populate('course');
@@ -79,6 +82,9 @@ exports.submitAssignment = async (req, res) => {
 exports.getMyTests = async (req, res) => {
   try {
     const student = await Student.findById(req.user._id);
+    if (student.dueAmount > 0) {
+      return res.status(403).json({ success: false, message: 'Please complete payment to access tests' });
+    }
     const tests = await Test.find({
       course: { $in: student.enrolledCourses }
     }).populate('course');
@@ -96,8 +102,9 @@ exports.submitTest = async (req, res) => {
     
     let score = 0;
     answers.forEach((answer, index) => {
-      if (answer === test.questions[index].correctAnswer) {
-        score += test.questions[index].marks;
+      const question = test.questions[index];
+      if (answer !== -1 && question.correctAnswer.includes(answer)) {
+        score += question.marks || 0;
       }
     });
     

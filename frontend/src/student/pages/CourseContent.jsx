@@ -19,6 +19,7 @@ const CourseContent = () => {
     try {
       const response = await api.get('/student/profile');
       const student = response.data.student;
+      console.log('Student enrolled courses:', student.enrolledCourses);
       setStudentData(student);
       setIsPaid(student?.dueAmount === 0);
       
@@ -26,20 +27,26 @@ const CourseContent = () => {
         setCourses(student.enrolledCourses);
         const firstCourse = student.enrolledCourses[0];
         const courseId = firstCourse._id || firstCourse;
+        console.log('Selected course ID:', courseId);
         setSelectedCourse(courseId);
         await fetchCourseData(courseId);
       } else {
-        setCourseData({ syllabus: [] });
+        console.log('No enrolled courses');
+        setCourseData({ syllabus: [], videos: [] });
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      setCourseData({ syllabus: [] });
+      setStudentData({ name: 'Student', dueAmount: 0, enrolledCourses: [] });
+      setCourseData({ syllabus: [], videos: [] });
     }
   };
 
   const fetchCourseData = async (courseId) => {
     try {
+      console.log('Fetching course data for:', courseId);
       const courseRes = await api.get(`/courses/${courseId}`);
+      console.log('Course data received:', courseRes.data.course);
+      console.log('Videos in course:', courseRes.data.course.videos);
       setCourseData(courseRes.data.course);
       if (courseRes.data.course.videos?.length > 0 && !selectedVideo) {
         setExpandedModules({ 1: true });
@@ -88,12 +95,15 @@ const CourseContent = () => {
     }
   };
 
-  if (!studentData) {
-    return <div className="text-center py-12">Loading student data...</div>;
-  }
-
-  if (!courseData) {
-    return <div className="text-center py-12">Loading course data...</div>;
+  if (!studentData || !courseData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Loading course content...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!isPaid) {
@@ -172,13 +182,27 @@ const CourseContent = () => {
         <div className="lg:col-span-3 order-1 lg:order-1">
           {selectedVideo ? (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="aspect-video">
+              <div className="aspect-video bg-black">
                 <iframe
-                  src={selectedVideo.url.replace('watch?v=', 'embed/')}
+                  src={(() => {
+                    let url = selectedVideo.url;
+                    if (url.includes('youtube.com/watch')) {
+                      const videoId = url.split('v=')[1]?.split('&')[0];
+                      return `https://www.youtube.com/embed/${videoId}`;
+                    } else if (url.includes('youtu.be/')) {
+                      const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+                      return `https://www.youtube.com/embed/${videoId}`;
+                    } else if (url.includes('vimeo.com/')) {
+                      const videoId = url.split('vimeo.com/')[1];
+                      return `https://player.vimeo.com/video/${videoId}`;
+                    }
+                    return url;
+                  })()}
                   className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                   title={selectedVideo.title}
+                  frameBorder="0"
                 ></iframe>
               </div>
               <div className="p-6">

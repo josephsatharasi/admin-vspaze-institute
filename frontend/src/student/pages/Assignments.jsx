@@ -15,13 +15,23 @@ const Assignments = () => {
 
   const fetchData = async () => {
     try {
-      const [profileRes, assignmentsRes] = await Promise.all([
-        api.get('/student/profile'),
-        api.get('/student/assignments')
-      ]);
-      setStudentData(profileRes.data.student);
-      setIsPaid(profileRes.data.student?.dueAmount === 0);
-      setAssignments(assignmentsRes.data.assignments || []);
+      const profileRes = await api.get('/student/profile');
+      const student = profileRes.data.student;
+      setStudentData(student);
+      const paid = student?.dueAmount === 0;
+      setIsPaid(paid);
+
+      if (paid) {
+        try {
+          const assignmentsRes = await api.get('/student/assignments');
+          setAssignments(assignmentsRes.data.assignments || []);
+        } catch (err) {
+          console.error('Error fetching assignments:', err);
+          setAssignments([]);
+        }
+      } else {
+        setAssignments([]);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {

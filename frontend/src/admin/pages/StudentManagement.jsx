@@ -4,10 +4,13 @@ import api from '../../utils/api';
 
 const StudentManagement = () => {
   const [students, setStudents] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCourseIds, setSelectedCourseIds] = useState([]);
 
   useEffect(() => {
     loadStudents();
+    loadCourses();
   }, []);
 
   const loadStudents = async () => {
@@ -18,6 +21,15 @@ const StudentManagement = () => {
       console.error('Error loading students:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCourses = async () => {
+    try {
+      const response = await api.get('/courses');
+      setCourses(response.data.courses || []);
+    } catch (error) {
+      console.error('Error loading courses:', error);
     }
   };
   const [showModal, setShowModal] = useState(false);
@@ -134,7 +146,7 @@ const StudentManagement = () => {
           </thead>
           <tbody>
             {filteredStudents.map((student) => (
-              <tr key={student._id} className="border-b border-gray-100 hover:bg-blue-50 cursor-pointer" onClick={() => { setSelectedStudent(student); setShowDetailModal(true); }}>
+              <tr key={student._id} className="border-b border-gray-100 hover:bg-blue-50 cursor-pointer" onClick={() => { setSelectedStudent(student); setSelectedCourseIds(student.enrolledCourses?.map(c => c._id || c) || []); setShowDetailModal(true); }}>
                 <td className="py-3 px-4">{student.name}</td>
                 <td className="py-3 px-4">{student.email}</td>
                 <td className="py-3 px-4">{student.phone}</td>
@@ -208,11 +220,44 @@ const StudentManagement = () => {
 
               <div className="card">
                 <h5 className="font-semibold text-gray-900 mb-3">Enrolled Courses</h5>
-                <div className="flex flex-wrap gap-2">
-                  {selectedStudent.enrolledCourses?.map((course, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">{course?.name || course}</span>
+                <div className="space-y-2 mb-4 max-h-60 overflow-y-auto">
+                  {courses.map((course) => (
+                    <label key={course._id} className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedCourseIds.includes(course._id)}
+                        onChange={() => {
+                          setSelectedCourseIds(prev => 
+                            prev.includes(course._id) 
+                              ? prev.filter(id => id !== course._id)
+                              : [...prev, course._id]
+                          );
+                        }}
+                        className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                      />
+                      <div className="ml-3 flex-1">
+                        <p className="font-semibold text-gray-900">{course.name}</p>
+                        <p className="text-sm text-gray-600">{course.duration} • {course.level}</p>
+                      </div>
+                    </label>
                   ))}
                 </div>
+                <button
+                  onClick={async () => {
+                    try {
+                      await api.put(`/admin/students/${selectedStudent._id}`, {
+                        enrolledCourses: selectedCourseIds
+                      });
+                      await loadStudents();
+                      alert('Courses updated successfully!');
+                    } catch (error) {
+                      alert('Failed to update courses');
+                    }
+                  }}
+                  className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-semibold"
+                >
+                  Save Course Changes
+                </button>
               </div>
 
               <div className="card bg-gradient-to-br from-green-50 to-blue-50">

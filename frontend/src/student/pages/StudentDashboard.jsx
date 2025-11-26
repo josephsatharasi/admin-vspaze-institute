@@ -22,12 +22,21 @@ const StudentDashboard = () => {
       setIsPaid(paid);
 
       if (paid) {
-        const [assignmentsRes, testsRes] = await Promise.all([
-          api.get('/student/assignments'),
-          api.get('/student/tests')
-        ]);
-        setAssignments(assignmentsRes.data.assignments || []);
-        setTests(testsRes.data.tests || []);
+        try {
+          const [assignmentsRes, testsRes] = await Promise.all([
+            api.get('/student/assignments'),
+            api.get('/student/tests')
+          ]);
+          setAssignments(assignmentsRes.data.assignments || []);
+          setTests(testsRes.data.tests || []);
+        } catch (err) {
+          console.error('Error fetching assignments/tests:', err);
+          setAssignments([]);
+          setTests([]);
+        }
+      } else {
+        setAssignments([]);
+        setTests([]);
       }
     } catch (error) {
       console.error('Error fetching data:', error);

@@ -42,7 +42,8 @@ const testSchema = new mongoose.Schema({
     },
     options: [String],
     correctAnswer: [Number],
-    marks: Number
+    marks: Number,
+    explanation: String
   }],
   attempts: [{
     student: {
