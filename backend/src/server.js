@@ -33,7 +33,9 @@ app.use(cors({
     'https://vspaze-admin.onrender.com',
     'https://vspaze-teacher.onrender.com'
   ],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
