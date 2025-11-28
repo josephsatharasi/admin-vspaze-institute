@@ -34,4 +34,39 @@ router.delete('/faculty/:id', deleteFaculty);
 router.post('/payments', recordPayment);
 router.get('/payments', getAllPayments);
 
+// Course Videos Management
+const Course = require('../models/course/Course');
+
+router.get('/courses/:courseId/videos', async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.courseId);
+    res.json({ success: true, videos: course.videos || [] });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/courses/:courseId/videos', async (req, res) => {
+  try {
+    const { title, url, module } = req.body;
+    const course = await Course.findById(req.params.courseId);
+    course.videos.push({ title, url, module, addedBy: req.user.id });
+    await course.save();
+    res.json({ success: true, message: 'Video added' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.delete('/courses/:courseId/videos/:videoId', async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.courseId);
+    course.videos = course.videos.filter(v => v._id.toString() !== req.params.videoId);
+    await course.save();
+    res.json({ success: true, message: 'Video deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;

@@ -1,11 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DollarSign, Calendar, CreditCard, Calculator, CheckCircle, Clock, Users, Award } from 'lucide-react';
-import { courses } from '../data/courses';
+import api from '../../utils/api';
 
 const Admissions = () => {
-  const [selectedCourse, setSelectedCourse] = useState(courses[0]);
-  const [loanAmount, setLoanAmount] = useState(selectedCourse?.fee.replace('₹', '').replace(',', '') || '45000');
+  const [courses, setCourses] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [loanAmount, setLoanAmount] = useState('45000');
   const [tenure, setTenure] = useState(12);
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const response = await api.get('/courses');
+      const coursesData = response.data.courses || [];
+      setCourses(coursesData);
+      if (coursesData.length > 0) {
+        setSelectedCourse(coursesData[0]);
+        setLoanAmount(coursesData[0].fee?.toString() || '45000');
+      }
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    }
+  };
 
   const calculateEMI = (principal, rate, months) => {
     const monthlyRate = rate / (12 * 100);
@@ -92,7 +111,7 @@ const Admissions = () => {
                 <button
                   onClick={() => {
                     setSelectedCourse(course);
-                    setLoanAmount(course.fee.replace('₹', '').replace(',', ''));
+                    setLoanAmount(course.fee?.toString() || '45000');
                   }}
                   className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
@@ -116,14 +135,14 @@ const Admissions = () => {
                   <select
                     value={selectedCourse?.id || ''}
                     onChange={(e) => {
-                      const course = courses.find(c => c.id === parseInt(e.target.value));
+                      const course = courses.find(c => c._id === e.target.value);
                       setSelectedCourse(course);
-                      setLoanAmount(course.fee.replace('₹', '').replace(',', ''));
+                      setLoanAmount(course.fee?.toString() || '45000');
                     }}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                   >
                     {courses.map(course => (
-                      <option key={course.id} value={course.id}>{course.name}</option>
+                      <option key={course._id} value={course._id}>{course.name}</option>
                     ))}
                   </select>
                 </div>

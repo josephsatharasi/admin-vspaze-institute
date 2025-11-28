@@ -27,7 +27,12 @@ connectDB();
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://admin-vspaze-institute.onrender.com'],
+  origin: [
+    'http://localhost:3000',
+    'https://vspaze-main.onrender.com',
+    'https://vspaze-admin.onrender.com',
+    'https://vspaze-teacher.onrender.com'
+  ],
   credentials: true
 }));
 app.use(express.json());

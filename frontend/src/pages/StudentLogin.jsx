@@ -133,11 +133,7 @@ const StudentLogin = () => {
           </button>
         </form>
 
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm text-gray-700 font-semibold mb-2">Demo Credentials:</p>
-          <p className="text-xs text-gray-600">Email: student@vspaze.com</p>
-          <p className="text-xs text-gray-600">Password: student123</p>
-        </div>
+
 
         <p className="text-center text-gray-500 text-sm mt-4">
           Don't have an account? <a href="/student-registration" className="text-blue-600 hover:underline">Register here</a>

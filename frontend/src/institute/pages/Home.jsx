@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Users, Award, BookOpen, TrendingUp, CheckCircle, Star, Code, Database, Megaphone, Cloud, Palette, Briefcase, DollarSign, Clock as ClockIcon, Target, Play, Zap, Shield, Video, ChevronLeft, ChevronRight, X, Calendar } from 'lucide-react';
-import { faculty } from '../data/faculty';
-import { testimonials } from '../data/testimonials';
+
 import api from '../../utils/api';
 
 const TestimonialCarousel = ({ testimonials }) => {
@@ -359,7 +358,7 @@ const Home = () => {
             <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80" alt="Tech team collaboration" className="rounded-3xl shadow-2xl shadow-cyan-500/20 mx-auto max-w-4xl border border-cyan-500/20" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            {faculty.map((member, idx) => (
+            {[].map((member, idx) => (
               <div key={member.id} className="group bg-slate-800 border border-cyan-500/20 rounded-3xl shadow-xl hover:shadow-2xl hover:shadow-cyan-500/20 transition-all transform hover:-translate-y-3 overflow-hidden">
                 <div className="bg-gradient-to-br from-cyan-600 via-blue-600 to-slate-700 p-8 text-center">
                   <div className="w-28 h-28 rounded-full mx-auto mb-4 shadow-2xl group-hover:scale-110 transition-transform border-2 border-cyan-400 overflow-hidden">
@@ -397,7 +396,7 @@ const Home = () => {
           <div className="mb-16 hidden md:block">
             <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80" alt="Happy engineering students" className="rounded-3xl shadow-2xl shadow-cyan-500/20 mx-auto max-w-4xl border border-cyan-500/20" />
           </div>
-          <TestimonialCarousel testimonials={testimonials} />
+          <TestimonialCarousel testimonials={[]} />
         </div>
       </section>
 

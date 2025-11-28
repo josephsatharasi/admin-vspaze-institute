@@ -1,11 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import api from '../../utils/api';
 import { ArrowLeft, Award, BookOpen, Users, Calendar, Star, Mail, Phone, Linkedin, Github } from 'lucide-react';
-import { faculty } from '../data/faculty';
+
 
 const FacultyDetail = () => {
   const { id } = useParams();
-  const facultyMember = faculty.find(f => f.id === parseInt(id));
+  const [facultyMember, setFacultyMember] = useState(null);
+
+  useEffect(() => {
+    fetchFacultyMember();
+  }, [id]);
+
+  const fetchFacultyMember = async () => {
+    try {
+      const response = await api.get('/admin/faculty');
+      const faculty = response.data.faculty || [];
+      const member = faculty.find(f => f._id === id);
+      setFacultyMember(member);
+    } catch (error) {
+      console.error('Error fetching faculty:', error);
+    }
+  };
 
   if (!facultyMember) {
     return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Faculty member not found</div>;
@@ -141,9 +157,9 @@ const FacultyDetail = () => {
                 Courses Teaching
               </h3>
               <div className="space-y-3">
-                {facultyMember.courses.map((course, idx) => (
+                {(facultyMember.assignedCourses || []).map((course, idx) => (
                   <div key={idx} className="bg-blue-50 p-3 rounded-lg">
-                    <span className="font-semibold text-blue-800">{course}</span>
+                    <span className="font-semibold text-blue-800">{typeof course === 'string' ? course : course.name}</span>
                   </div>
                 ))}
               </div>

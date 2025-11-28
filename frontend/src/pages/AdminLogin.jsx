@@ -123,11 +123,7 @@ const AdminLogin = () => {
           </button>
         </form>
 
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm text-gray-700 font-semibold mb-2">Demo Credentials:</p>
-          <p className="text-xs text-gray-600">Email: admin@vspaze.com</p>
-          <p className="text-xs text-gray-600">Password: admin123</p>
-        </div>
+
 
         <p className="text-center text-gray-500 text-sm mt-4">
           <a href="/" className="text-blue-600 hover:underline">← Back to Home</a>

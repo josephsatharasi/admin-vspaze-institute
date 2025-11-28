@@ -1,9 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Award, Briefcase, GraduationCap, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { faculty } from '../data/faculty';
+import api from '../../utils/api';
 
 const Faculty = () => {
+  const [faculty, setFaculty] = useState([]);
+
+  useEffect(() => {
+    fetchFaculty();
+  }, []);
+
+  const fetchFaculty = async () => {
+    try {
+      const response = await api.get('/admin/faculty');
+      setFaculty(response.data.faculty || []);
+    } catch (error) {
+      console.error('Error fetching faculty:', error);
+    }
+  };
+
   return (
     <div>
       {/* Hero Section */}
@@ -22,16 +37,16 @@ const Faculty = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {faculty.map((member) => (
               <Link
-                key={member.id}
-                to={`/faculty/${member.id}`}
+                key={member._id}
+                to={`/faculty/${member._id}`}
                 className="block bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 overflow-hidden cursor-pointer"
               >
                 <div className="bg-gradient-to-br from-blue-500 to-purple-500 p-8 text-center">
-                  <img 
-                    src={`https://randomuser.me/api/portraits/${member.id % 2 === 0 ? 'men' : 'women'}/${20 + member.id}.jpg`}
-                    alt={member.name}
-                    className="w-32 h-32 rounded-full mx-auto mb-4 shadow-xl border-4 border-white object-cover"
-                  />
+                  <div className="w-32 h-32 rounded-full mx-auto mb-4 shadow-xl border-4 border-white bg-white flex items-center justify-center">
+                    <span className="text-4xl font-bold text-blue-600">
+                      {member.name?.split(' ').map(n => n[0]).join('') || 'F'}
+                    </span>
+                  </div>
                   <h3 className="text-2xl font-bold text-white mb-2">{member.name}</h3>
                   <p className="text-white/90 font-semibold">{member.specialization}</p>
                 </div>
@@ -56,12 +71,12 @@ const Faculty = () => {
                       Teaches:
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      {member.courses.map((course, idx) => (
+                      {(member.assignedCourses || []).map((course, idx) => (
                         <span
                           key={idx}
                           className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
                         >
-                          {course}
+                          {typeof course === 'string' ? course : course.name}
                         </span>
                       ))}
                     </div>

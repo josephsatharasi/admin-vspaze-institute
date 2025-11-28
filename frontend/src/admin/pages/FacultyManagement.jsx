@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, X, Clock, BookOpen, Eye } from 'lucide-react';
-import { initializeDummyActivity } from '../utils/initializeDummyActivity';
+
 import api from '../../utils/api';
 
 const FacultyManagement = () => {
@@ -40,13 +40,10 @@ const FacultyManagement = () => {
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
 
-  useEffect(() => {
-    initializeDummyActivity();
-  }, []);
+
 
   const getFacultyActivity = (facultyId) => {
-    const activities = JSON.parse(localStorage.getItem('login_activities') || '[]');
-    return activities.filter(a => a.userId === `T${facultyId.toString().padStart(3, '0')}` && a.userType === 'teacher');
+    return [];
   };
 
   const calculateTotalHours = (activities) => {
